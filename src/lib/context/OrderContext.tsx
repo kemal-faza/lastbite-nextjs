@@ -1,3 +1,5 @@
+'use client';
+
 import { createContext, useContext, useReducer, type ReactNode } from 'react';
 import { useEffect } from 'react';
 
@@ -106,6 +108,7 @@ function normalizeOrder(value: unknown): Order | null {
 
 function loadStoredOrders(): OrderState {
   const initialState: OrderState = { orders: [] };
+  if (typeof window === 'undefined') return initialState;
   const saved = localStorage.getItem(ORDER_STORAGE_KEY);
   if (!saved) return initialState;
 
