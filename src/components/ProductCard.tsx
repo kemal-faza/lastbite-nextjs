@@ -1,10 +1,12 @@
+'use client';
+
 import { Clock, MapPin, ShoppingBag, Heart } from 'lucide-react';
 import { useState, useCallback } from 'react';
 import { motion } from 'motion/react';
-import { type Product } from '../data/products';
-import { useNavigate } from 'react-router';
-import { useCart } from '../context/CartContext';
-import { useWishlist } from '../context/WishlistContext';
+import { type Product } from '@/lib/data/products';
+import { useRouter } from 'next/navigation';
+import { useCart } from '@/lib/context/CartContext';
+import { useWishlist } from '@/lib/context/WishlistContext';
 
 interface ProductCardProps {
   product: Product;
@@ -13,7 +15,7 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const [isAdded, setIsAdded] = useState(false);
   const [imgError, setImgError] = useState(false);
-  const navigate = useNavigate();
+  const router = useRouter();
   const { items: cartItems, addItem, clearCart } = useCart();
   const { toggle, isWishlisted } = useWishlist();
   const isFav = isWishlisted(product.id);
@@ -47,7 +49,7 @@ export function ProductCard({ product }: ProductCardProps) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      onClick={() => navigate('/product/' + product.id)}
+      onClick={() => router.push('/product/' + product.id)}
       className="bg-white rounded-2xl shadow-md border border-gray-100 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
     >
       <div className="relative overflow-hidden rounded-t-2xl bg-gray-100">

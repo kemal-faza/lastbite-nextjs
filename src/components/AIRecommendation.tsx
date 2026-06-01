@@ -1,6 +1,8 @@
+'use client';
+
 import { Sparkles, Info } from 'lucide-react';
-import { products, type Product } from '../data/products';
-import { useNavigate } from 'react-router';
+import { products, type Product } from '@/lib/data/products';
+import { useRouter } from 'next/navigation';
 import { useState, useMemo } from 'react';
 
 interface AIRecommendationProps {
@@ -137,7 +139,7 @@ export function AIRecommendation({
 	currentProductId,
 	title,
 }: AIRecommendationProps) {
-	const navigate = useNavigate();
+	const router = useRouter();
 	const [tooltipId, setTooltipId] = useState<number | null>(null);
 
 	// useMemo: rekomendasi cuma dihitung ulang kalo currentProductId berubah
@@ -174,11 +176,11 @@ export function AIRecommendation({
 				{recommendations.map((product) => (
 					<article
 						key={product.id}
-						onClick={() => navigate(`/product/${product.id}`)}
+						onClick={() => router.push(`/product/${product.id}`)}
 						onKeyDown={(event) => {
 							if (event.key === 'Enter' || event.key === ' ') {
 								event.preventDefault();
-								navigate(`/product/${product.id}`);
+								router.push(`/product/${product.id}`);
 							}
 						}}
 						role="button"
