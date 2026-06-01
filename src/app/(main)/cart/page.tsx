@@ -492,7 +492,7 @@ export default function CartPage() {
 			return (
 				<button
 					onClick={() => setCheckoutStep(2)}
-					className="w-full bg-[var(--primary)] text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-black/10 hover:bg-[#0d5254] transition-colors flex items-center justify-between active:scale-[0.98]">
+					className="w-full bg-[var(--primary)] text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-black/10 hover:bg-[#0d5254] transition-colors flex items-center justify-between active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2">
 					<div className="flex flex-col items-start">
 						<span className="text-xs font-medium text-white/80">
 							Total Bayar
@@ -517,42 +517,42 @@ export default function CartPage() {
 						<ChevronLeft className="w-4 h-4" />
 						Kembali
 					</button>
-					<button
-						onClick={() => setCheckoutStep(3)}
-						disabled={!paymentInfo.name.trim()}
-						className={
-							'flex-[2] font-bold py-3.5 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 ' +
-							(paymentInfo.name.trim()
-								? 'bg-[var(--primary)] text-white shadow-black/10 hover:bg-[#0d5254] active:scale-[0.98]'
-								: 'bg-gray-200 text-gray-400 cursor-not-allowed')
-						}>
-						Lanjut ke Konfirmasi
-						<ArrowRight className="w-4 h-4" />
-					</button>
+				<button
+					onClick={() => setCheckoutStep(3)}
+					disabled={!paymentInfo.name.trim()}
+					className={
+						'flex-[2] font-bold py-3.5 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 ' +
+						(paymentInfo.name.trim()
+							? 'bg-[var(--primary)] text-white shadow-black/10 hover:bg-[#0d5254] active:scale-[0.98]'
+							: 'bg-gray-200 text-gray-400 cursor-not-allowed')
+					}>
+					Lanjut ke Konfirmasi
+					<ArrowRight className="w-4 h-4" />
+				</button>
 				</div>
 			);
 		}
 		if (checkoutStep === 3) {
 			return (
 				<div className="flex gap-3">
-					<button
-						onClick={() => setCheckoutStep(2)}
-						className="flex-1 border-2 border-gray-200 text-gray-700 font-semibold py-3.5 px-4 rounded-xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
-						<ChevronLeft className="w-4 h-4" />
-						Kembali
-					</button>
-					<button
-						onClick={handleConfirmOrder}
-						disabled={isSubmitting}
-						className={
-							'flex-[2] font-bold py-3.5 px-4 rounded-xl shadow-lg transition-colors active:scale-[0.98] flex items-center justify-center gap-2 ' +
-							(isSubmitting
-								? 'bg-gray-300 text-gray-600 cursor-not-allowed shadow-none'
-								: 'bg-[var(--secondary)] text-white shadow-black/10 hover:bg-[#c9952e]')
-						}>
-						<Check className="w-5 h-5" />
-						{isSubmitting ? 'Memproses...' : 'Konfirmasi Pesanan'}
-					</button>
+				<button
+					onClick={() => setCheckoutStep(2)}
+					className="flex-1 border-2 border-gray-200 text-gray-700 font-semibold py-3.5 px-4 rounded-xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2">
+					<ChevronLeft className="w-4 h-4" />
+					Kembali
+				</button>
+				<button
+					onClick={handleConfirmOrder}
+					disabled={isSubmitting}
+					className={
+						'flex-[2] font-bold py-3.5 px-4 rounded-xl shadow-lg transition-colors active:scale-[0.98] flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--secondary)] focus-visible:ring-offset-2 ' +
+						(isSubmitting
+							? 'bg-gray-300 text-gray-600 cursor-not-allowed shadow-none'
+							: 'bg-[var(--secondary)] text-white shadow-black/10 hover:bg-[#c9952e]')
+					}>
+					<Check className="w-5 h-5" />
+					{isSubmitting ? 'Memproses...' : 'Konfirmasi Pesanan'}
+				</button>
 				</div>
 			);
 		}

@@ -22,7 +22,7 @@ function WishlistItem({ product }: WishlistItemProps) {
         </span>
         <button
           onClick={() => setNotifActive(!notifActive)}
-          className={`p-1.5 rounded-xl border transition-all flex items-center gap-1 text-[10px] font-bold ${
+          className={`p-1.5 rounded-xl border transition-all flex items-center gap-1 text-[10px] font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-1 ${
             notifActive
               ? 'bg-amber-50 border-amber-200 text-amber-700'
               : 'bg-gray-50 border-gray-100 text-gray-600 hover:bg-gray-100'

@@ -50,7 +50,7 @@ export function ProductCard({ product }: ProductCardProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       onClick={() => router.push('/product/' + product.id)}
-      className="bg-white rounded-2xl shadow-md border border-gray-100 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+      className="bg-white rounded-2xl shadow-md border border-gray-100 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2"
     >
       <div className="relative overflow-hidden rounded-t-2xl bg-gray-100">
         {imgError ? (
@@ -119,20 +119,32 @@ export function ProductCard({ product }: ProductCardProps) {
             </span>
           </div>
 
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={handleAddToCart}
-            aria-label={isAdded ? 'Ditambahkan ' + product.name + ' ke keranjang' : 'Beli ' + product.name}
-            className={
-              'min-w-[88px] px-4 py-2 rounded-xl font-medium transition-colors flex items-center justify-center gap-2 ' +
-              (isAdded
-                ? 'bg-[var(--primary)]/10 text-[var(--primary)] cursor-default'
-                : 'bg-[var(--primary)] text-white hover:bg-[#0d5254]')
-            }
-          >
-            <ShoppingBag className="w-4 h-4" />
-            {isAdded ? 'Ditambahkan!' : 'Beli'}
-          </motion.button>
+          {product.remaining === 0 ? (
+            <button
+              disabled
+              className="min-w-[88px] px-4 py-2 rounded-xl font-medium bg-gray-200 text-gray-400 cursor-not-allowed flex items-center justify-center gap-2"
+              aria-label={'Stok habis: ' + product.name}
+            >
+              <ShoppingBag className="w-4 h-4" />
+              Stok Habis
+            </button>
+          ) : (
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={handleAddToCart}
+              disabled={product.remaining <= 0}
+              aria-label={isAdded ? 'Ditambahkan ' + product.name + ' ke keranjang' : 'Beli ' + product.name}
+              className={
+                'min-w-[88px] px-4 py-2 rounded-xl font-medium transition-colors flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-1 ' +
+                (isAdded
+                  ? 'bg-[var(--primary)]/10 text-[var(--primary)] cursor-default'
+                  : 'bg-[var(--primary)] text-white hover:bg-[#0d5254]')
+              }
+            >
+              <ShoppingBag className="w-4 h-4" />
+              {isAdded ? 'Ditambahkan!' : 'Beli'}
+            </motion.button>
+          )}
         </div>
       </div>
     </motion.div>
