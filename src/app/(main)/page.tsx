@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { ShieldCheck } from 'lucide-react';
-import { Header } from '@/components/Header';
 import { SearchBar } from '@/components/SearchBar';
 import { CategoryFilter } from '@/components/CategoryFilter';
 import { ProductGrid } from '@/components/ProductGrid';
@@ -23,7 +22,6 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col">
-      <Header />
       <div className="px-4 pt-4 pb-6 space-y-4">
         <SearchBar value={searchQuery} onChange={setSearchQuery} />
         <div className="bg-[var(--primary)]/5 rounded-xl p-3 flex items-center gap-3 border border-[var(--primary)]/10">

@@ -12,23 +12,21 @@ export default function OrdersPage() {
 
   return (
     <div className="flex flex-col h-full w-full">
-      <header className="bg-[var(--primary)] text-white px-4 py-4 shadow-md flex items-center gap-3">
+      <div className="bg-white px-4 py-3 flex items-center gap-3 shadow-sm sticky top-0 z-10 border-b border-gray-100">
         <button
           onClick={() => router.push('/profile')}
-          className="p-1 -ml-1 hover:bg-white/10 rounded-lg transition-colors flex items-center justify-center text-white"
+          className="p-1 -ml-1 hover:bg-gray-100 rounded-lg transition-colors"
           aria-label="Kembali ke Profil"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-5 h-5 text-gray-700" />
         </button>
-        <div className="flex items-center gap-3">
-          <h1 className="text-lg font-semibold">Pesanan Saya</h1>
-          {pendingOrders.length > 0 && (
-            <span className="bg-[var(--secondary)] text-white text-xs font-bold px-2 py-0.5 rounded-full">
-              {pendingOrders.length}
-            </span>
-          )}
-        </div>
-      </header>
+        <h1 className="text-lg font-bold text-gray-900">Pesanan Saya</h1>
+        {pendingOrders.length > 0 && (
+          <span className="bg-[var(--secondary)] text-white text-xs font-bold px-2 py-0.5 rounded-full">
+            {pendingOrders.length}
+          </span>
+        )}
+      </div>
       <div className="flex-1 overflow-y-auto px-4 pt-6 pb-28 space-y-4">
         {allOrders.length > 0 ? (
           allOrders.map((order) => {

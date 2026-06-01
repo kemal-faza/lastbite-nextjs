@@ -44,11 +44,8 @@ export default function SearchPage() {
 
 	return (
 		<div className="flex flex-col bg-white h-full">
-			{/* Search Header */}
-			<div className="sticky top-0 z-10 bg-white pt-6 pb-3 px-4 border-b border-gray-100">
-				<h1 className="text-xl font-bold text-gray-900 mb-4">
-					Pencarian
-				</h1>
+			{/* Search Bar */}
+			<div className="sticky top-0 z-10 bg-white pb-3 px-4 pt-3 border-b border-gray-100">
 				<div className="relative">
 					<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
 						<SearchIcon className="h-5 w-5 text-gray-400" />
