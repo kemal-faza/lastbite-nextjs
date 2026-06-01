@@ -27,7 +27,7 @@ export default function ProfilePage() {
 	const router = useRouter();
 
 	return (
-		<div className="flex flex-col bg-gray-50 pb-20 h-full">
+		<div className="flex flex-col bg-[var(--background)] pb-20 h-full">
 			{/* Profile Header */}
 			<div className="bg-white px-4 pt-8 pb-6 shadow-sm">
 				<div className="flex items-center gap-4">
