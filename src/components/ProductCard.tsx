@@ -1,6 +1,6 @@
 'use client';
 
-import { Clock, MapPin, ShoppingBag, Heart } from 'lucide-react';
+import { Clock, MapPin, ShoppingBag, Heart, ShieldCheck } from 'lucide-react';
 import { useState, useCallback } from 'react';
 import { motion } from 'motion/react';
 import { type Product } from '@/lib/data/products';
@@ -83,7 +83,11 @@ export function ProductCard({ product }: ProductCardProps) {
         <div className="absolute top-3 right-3 bg-[var(--destructive)] text-white px-3 py-1 rounded-full font-bold text-sm shadow-lg">
           -{product.discount}%
         </div>
-        <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1 shadow-lg">
+        <div className="absolute top-3 left-12 bg-green-600/90 backdrop-blur-sm px-2.5 py-1 rounded-full flex items-center gap-1 shadow-lg">
+          <ShieldCheck className="w-3 h-3 text-white" />
+          <span className="text-[10px] font-bold text-white">Higienis</span>
+        </div>
+        <div className="absolute top-12 left-3 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1 shadow-lg">
           <Clock className="w-3 h-3 text-[var(--secondary)]" />
           <span className="text-xs font-medium text-[var(--secondary)]">{product.expiresIn}</span>
         </div>
