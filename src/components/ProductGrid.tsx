@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { ProductCard } from './ProductCard';
-import { products } from '../data/products';
+import { products } from '@/lib/data/products';
 import type { SortOption } from './FilterBar';
 import type { FilterValues } from './FilterModal';
 
