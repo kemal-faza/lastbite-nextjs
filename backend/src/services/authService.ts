@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import { prisma } from '../lib/prisma.js';
 import { hashPassword, verifyPassword } from '../lib/password.js';
 import { getOtpSender } from '../lib/otpSender.js';
@@ -9,7 +10,7 @@ import type { UserResponse, AuthTokens, LoginResponse } from '../types/index.js'
 function generateOtpCode(): string {
   const min = Math.pow(10, config.otpLength - 1);
   const max = Math.pow(10, config.otpLength) - 1;
-  return (Math.floor(Math.random() * (max - min + 1)) + min).toString();
+  return crypto.randomInt(min, max + 1).toString();
 }
 
 export class EmailAlreadyExistsError extends Error {
@@ -25,7 +26,8 @@ export async function register(input: {
   phone?: string;
   password: string;
 }): Promise<{ user: UserResponse }> {
-  const existing = await prisma.user.findUnique({ where: { email: input.email } });
+  const normalizedEmail = input.email.toLowerCase();
+  const existing = await prisma.user.findUnique({ where: { email: normalizedEmail } });
   if (existing) {
     throw new EmailAlreadyExistsError();
   }
@@ -38,7 +40,7 @@ export async function register(input: {
 
   const user = await prisma.user.create({
     data: {
-      email: input.email,
+      email: normalizedEmail,
       name: input.name,
       phone: input.phone || null,
       passwordHash,
@@ -70,7 +72,8 @@ export async function login(input: {
   email: string;
   password: string;
 }): Promise<LoginResponse> {
-  const user = await prisma.user.findUnique({ where: { email: input.email } });
+  const normalizedEmail = input.email.toLowerCase();
+  const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
   if (!user) {
     throw new InvalidCredentialsError();
   }
@@ -127,7 +130,8 @@ export class InvalidRefreshTokenError extends Error {
 }
 
 export async function verifyOtp(input: { email: string; code: string }): Promise<{ verified: boolean }> {
-  const user = await prisma.user.findUnique({ where: { email: input.email } });
+  const normalizedEmail = input.email.toLowerCase();
+  const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
   if (!user) {
     throw new UserNotFoundError();
   }
@@ -157,7 +161,8 @@ export async function verifyOtp(input: { email: string; code: string }): Promise
 }
 
 export async function resendOtp(input: { email: string }): Promise<void> {
-  const user = await prisma.user.findUnique({ where: { email: input.email } });
+  const normalizedEmail = input.email.toLowerCase();
+  const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
   if (!user) {
     throw new UserNotFoundError();
   }

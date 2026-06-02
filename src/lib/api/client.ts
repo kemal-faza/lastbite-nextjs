@@ -36,27 +36,39 @@ export function clearTokens(): void {
   localStorage.removeItem('user');
 }
 
+let refreshPromise: Promise<string | null> | null = null;
+
 async function refreshAccessToken(): Promise<string | null> {
+  if (refreshPromise) return refreshPromise;
+
   const refreshToken = getRefreshToken();
   if (!refreshToken) return null;
 
-  try {
-    const res = await fetch(`${API_BASE}/auth/refresh`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refreshToken }),
-    });
+  refreshPromise = (async () => {
+    try {
+      const res = await fetch(`${API_BASE}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken }),
+      });
 
-    if (!res.ok) {
-      clearTokens();
+      if (!res.ok) {
+        clearTokens();
+        return null;
+      }
+
+      const body = await res.json();
+      setTokens(body.accessToken, body.refreshToken);
+      return body.accessToken;
+    } catch {
       return null;
     }
+  })();
 
-    const body = await res.json();
-    setTokens(body.accessToken, body.refreshToken);
-    return body.accessToken;
-  } catch {
-    return null;
+  try {
+    return await refreshPromise;
+  } finally {
+    refreshPromise = null;
   }
 }
 
