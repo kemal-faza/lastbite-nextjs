@@ -32,6 +32,7 @@ model User {
   createdAt                  DateTime  @default(now())
   updatedAt                  DateTime  @updatedAt
   products                   Product[]
+  cart                       Cart?
 
   @@map("users")
 }
@@ -52,6 +53,7 @@ model Product {
   expiresAt       DateTime
   mitraId         String?
   mitra           User?     @relation(fields: [mitraId], references: [id])
+  cartItems       CartItem[]
   isActive        Boolean   @default(true)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
@@ -60,4 +62,30 @@ model Product {
   @@index([mitraId])
   @@index([isActive])
   @@map("products")
+}
+
+model Cart {
+  id        String     @id @default(uuid())
+  userId    String     @unique
+  storeName String?
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("carts")
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  cartId    String
+  productId String
+  quantity  Int      @default(1)
+
+  cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@unique([cartId, productId])
+  @@map("cart_items")
 }
