@@ -7,11 +7,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Category {
+  meals
+  bakery
+  drinks
+}
+
+enum UserRole {
+  FOOD_SAVER
+  MITRA
+}
+
 model User {
   id                         String    @id @default(uuid())
   email                      String    @unique
   name                       String
   phone                      String?
+  role                       UserRole  @default(FOOD_SAVER)
   passwordHash               String
   isVerified                 Boolean   @default(false)
   verificationCode           String?
@@ -19,6 +31,33 @@ model User {
   refreshToken               String?
   createdAt                  DateTime  @default(now())
   updatedAt                  DateTime  @updatedAt
+  products                   Product[]
 
   @@map("users")
+}
+
+model Product {
+  id              String    @id @default(uuid())
+  name            String
+  description     String?
+  category        Category
+  originalPrice   Int
+  discountedPrice Int
+  stock           Int       @default(0)
+  imageUrl        String?
+  storeName       String
+  storeAddress    String?
+  storeLat        Float?
+  storeLng        Float?
+  expiresAt       DateTime
+  mitraId         String?
+  mitra           User?     @relation(fields: [mitraId], references: [id])
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([category])
+  @@index([mitraId])
+  @@index([isActive])
+  @@map("products")
 }
