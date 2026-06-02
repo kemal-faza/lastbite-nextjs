@@ -4,6 +4,7 @@ import { createAuditLog } from '../services/auditLogService.js';
 import { listMitraVerifications, verifyMitra } from '../services/adminMitraService.js';
 import { verifyMitraSchema, paginationSchema, userUpdateSchema } from '../validators/admin.js';
 import { listUsers, getUserDetail, updateUser } from '../services/adminUserService.js';
+import { listAllProducts, toggleProduct } from '../services/adminProductService.js';
 
 export const adminRouter = Router();
 
@@ -44,6 +45,31 @@ adminRouter.patch('/users/:id', async (req, res) => {
   });
 
   res.json(user);
+});
+
+// ---- Product Moderation ----
+
+adminRouter.get('/products', async (req, res) => {
+  const query = paginationSchema.parse(req.query);
+  const isActive = req.query.isActive === 'true' ? true : req.query.isActive === 'false' ? false : undefined;
+  const search = req.query.search as string | undefined;
+  const result = await listAllProducts({ isActive, search, page: query.page, limit: query.limit });
+  res.json(result);
+});
+
+adminRouter.patch('/products/:id', async (req, res) => {
+  const { isActive } = req.body;
+  const result = await toggleProduct(req.params.id, isActive);
+
+  await createAuditLog({
+    actorId: req.user!.userId,
+    action: isActive ? 'product.activate' : 'product.deactivate',
+    entity: 'product',
+    entityId: req.params.id,
+    details: { name: result.name },
+  });
+
+  res.json(result);
 });
 
 // ---- Mitra Verification ----
