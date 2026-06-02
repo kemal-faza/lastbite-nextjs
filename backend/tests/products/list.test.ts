@@ -111,7 +111,13 @@ describe('GET /products', () => {
     expect(res2.body.page).toBe(2);
   });
 
-  it('should return empty results for non-existent category', async () => {
+  it('should return 400 for invalid category value', async () => {
+    const res = await request(app).get('/products?category=nonexistent');
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe('VALIDATION_ERROR');
+  });
+
+  it('should filter drinks with price descending', async () => {
     const res = await request(app).get('/products?category=drinks&sort=price_desc');
     expect(res.status).toBe(200);
     expect(res.body.products.length).toBe(1);

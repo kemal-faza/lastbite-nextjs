@@ -3,27 +3,15 @@
 import { Clock, MapPin, ShoppingBag, Heart, ShieldCheck } from 'lucide-react';
 import { useState, useCallback } from 'react';
 import { motion } from 'motion/react';
-import { type ProductData } from '@/lib/api/products';
+import type { ProductData } from '@/lib/api/products';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/lib/context/CartContext';
 import { useWishlist } from '@/lib/context/WishlistContext';
-import { ImageWithFallback } from '@/components/ImageWithFallback';
+import { ImageWithFallback } from './ImageWithFallback';
+import { formatExpiry, toNumericId } from '@/lib/utils/date';
 
 interface ProductCardProps {
   product: ProductData;
-}
-
-function formatExpiry(expiresAt: string): string {
-  const diff = new Date(expiresAt).getTime() - Date.now();
-  if (diff <= 0) return 'Kadaluwarsa';
-  const hours = Math.max(0, Math.floor(diff / (1000 * 60 * 60)));
-  const minutes = Math.max(0, Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)));
-  if (hours === 0) return `${minutes} menit`;
-  return `${hours} jam ${minutes} menit`;
-}
-
-function toNumericId(id: string): number {
-  return Number(id.replace(/-/g, '').slice(0, 9)) || 0;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
