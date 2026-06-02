@@ -30,7 +30,6 @@ What production needs:
 - Real auth with JWT sessions
 - PostgreSQL database with proper schemas
 - REST API (or GraphQL)
-- Real payment integration (QRIS, VA, GoPay)
 - Push notifications (Firebase FCM)
 - Real maps & geolocation
 - Real image upload & CDN
@@ -83,17 +82,7 @@ What production needs:
 | API | `POST /mitra/register`, `GET/PATCH /mitra/me`, `GET/POST/PATCH/DELETE /mitra/products`, `GET /mitra/orders`, `PATCH /mitra/orders/:id/status` |
 | Deliverable | Mitra can onboard, manage products, fulfill orders |
 
-### M5: Payment Integration
-**Goal**: Real digital payments beyond COD
-
-| Layer | Scope |
-|-------|-------|
-| Backend | Payment gateway integration (Midtrans), multi-method (QRIS, VA, GoPay, COD), payment callback webhook, transaction status tracking, idempotency |
-| Mobile | Payment method selection in checkout, payment status UI, COD fallback |
-| API | `POST /payments/create`, `POST /payments/callback` (webhook) |
-| Deliverable | Users can pay with QRIS, VA, or GoPay; COD remains available |
-
-### M6: Notification Service
+### M5: Notification Service
 **Goal**: Real-time push notifications for key events
 
 | Layer | Scope |
@@ -103,7 +92,7 @@ What production needs:
 | API | `POST /devices`, `GET /notifications`, `PATCH /notifications/:id/read` |
 | Deliverable | Users receive push notifications for order updates and stock alerts |
 
-### M7: Location & Maps
+### M6: Location & Maps
 **Goal**: Real maps replacing mock MapModal
 
 | Layer | Scope |
@@ -113,7 +102,7 @@ What production needs:
 | API | `PATCH /mitra/me/location`, `GET /products?lat=&lng=&radius=` |
 | Deliverable | Real maps with store locations, accurate distance, and directions |
 
-### M8: Reviews & Trust System
+### M7: Reviews & Trust System
 **Goal**: Real review system to build trust (currently SUS trust score 3.27/5 -- lowest)
 
 | Layer | Scope |
@@ -123,7 +112,7 @@ What production needs:
 | API | `POST /orders/:id/review`, `GET /products/:id/reviews`, `GET /mitra/:id/reviews` |
 | Deliverable | Verified reviews, trust badges calculated from real data |
 
-### M9: Analytics Dashboard
+### M8: Analytics Dashboard
 **Goal**: Mitra can analyze sales performance
 
 | Layer | Scope |
@@ -133,7 +122,7 @@ What production needs:
 | API | `GET /mitra/analytics?from=&to=&granularity=` |
 | Deliverable | Mitra dashboard with actionable sales analytics |
 
-### M10: Admin & Operations
+### M9: Admin & Operations
 **Goal**: Platform operations team can manage everything
 
 | Layer | Scope |

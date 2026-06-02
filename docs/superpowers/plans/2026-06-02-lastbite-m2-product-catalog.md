@@ -2693,7 +2693,7 @@ const imageSrc = getImageUrl(product.imageUrl);
 
 Update `ProductCard.tsx` to handle missing fields:
 
-- `distance`: Remove or make optional — will be implemented in M7. Remove the distance display line:
+- `distance`: Remove or make optional — will be implemented in M6. Remove the distance display line:
 
 ```tsx
 // Remove these lines from ProductCard:
