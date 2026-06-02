@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import { verifyAccessToken, type JwtPayload } from '../lib/jwt.js';
+import { prisma } from '../lib/prisma.js';
 
 declare global {
   namespace Express {
@@ -26,4 +27,24 @@ export function requireAuth(req: Request, res: Response, next: NextFunction): vo
   } catch {
     res.status(401).json({ error: 'Sesi telah berakhir. Silakan login kembali.', code: 'TOKEN_EXPIRED' });
   }
+}
+
+export function requireMitra(req: Request, res: Response, next: NextFunction): void {
+  requireAuth(req, res, () => {
+    prisma.user
+      .findUnique({
+        where: { id: req.user!.userId },
+        select: { role: true },
+      })
+      .then((user) => {
+        if (!user || user.role !== 'MITRA') {
+          res.status(403).json({ error: 'Akses hanya untuk Mitra.', code: 'FORBIDDEN' });
+          return;
+        }
+        next();
+      })
+      .catch(() => {
+        res.status(500).json({ error: 'Gagal memverifikasi akses', code: 'INTERNAL_ERROR' });
+      });
+  });
 }

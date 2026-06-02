@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, Category } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 import type { ProductResponse, ProductListResponse, ProductSearchResponse } from '../types/index.js';
 
@@ -121,6 +121,44 @@ export interface SearchOptions {
   category?: string;
   page: number;
   limit: number;
+}
+
+export interface CreateProductInput {
+  name: string;
+  description?: string | null;
+  category: string;
+  originalPrice: number;
+  discountedPrice: number;
+  stock: number;
+  imageUrl?: string | null;
+  storeName: string;
+  storeAddress?: string | null;
+  storeLat?: number | null;
+  storeLng?: number | null;
+  expiresAt: string;
+  mitraId: string;
+}
+
+export async function create(input: CreateProductInput): Promise<ProductResponse> {
+  const product = await prisma.product.create({
+    data: {
+      name: input.name,
+      description: input.description ?? null,
+      category: input.category as Category,
+      originalPrice: input.originalPrice,
+      discountedPrice: input.discountedPrice,
+      stock: input.stock,
+      imageUrl: input.imageUrl ?? null,
+      storeName: input.storeName,
+      storeAddress: input.storeAddress ?? null,
+      storeLat: input.storeLat ?? null,
+      storeLng: input.storeLng ?? null,
+      expiresAt: new Date(input.expiresAt),
+      mitraId: input.mitraId,
+    },
+  });
+
+  return toProductResponse(product);
 }
 
 export async function search(options: SearchOptions): Promise<ProductSearchResponse> {

@@ -50,3 +50,47 @@ export async function fetchProducts(params: FetchProductsParams = {}): Promise<P
 export async function fetchProduct(id: string): Promise<{ product: ProductData }> {
   return apiFetch<{ product: ProductData }>(`/products/${id}`);
 }
+
+export async function createProduct(data: {
+  name: string;
+  description?: string;
+  category: string;
+  originalPrice: number;
+  discountedPrice: number;
+  stock: number;
+  imageUrl?: string | null;
+  storeName: string;
+  storeAddress?: string;
+  expiresAt: string;
+}): Promise<{ product: ProductData }> {
+  return apiFetch<{ product: ProductData }>('/products', {
+    method: 'POST',
+    body: JSON.stringify(data),
+    auth: true,
+  });
+}
+
+export async function uploadImage(file: File): Promise<{ url: string; key: string }> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+  const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+
+  const res = await fetch(`${API_BASE}/uploads`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  });
+
+  if (!res.ok) {
+    let errorMsg = 'Upload gagal';
+    try {
+      const body = await res.json();
+      errorMsg = body.error || errorMsg;
+    } catch {}
+    throw new Error(errorMsg);
+  }
+
+  return res.json();
+}

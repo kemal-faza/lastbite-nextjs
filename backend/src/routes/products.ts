@@ -1,7 +1,7 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
-import { requireAuth } from '../middleware/auth.js';
-import { findAll, findById, search, ProductNotFoundError } from '../services/productService.js';
-import { productQuerySchema, searchQuerySchema } from '../validators/products.js';
+import { requireAuth, requireMitra } from '../middleware/auth.js';
+import { findAll, findById, search, create, ProductNotFoundError } from '../services/productService.js';
+import { productQuerySchema, searchQuerySchema, createProductSchema } from '../validators/products.js';
 
 export const productsRouter = Router();
 
@@ -53,6 +53,24 @@ productsRouter.get('/:id', async (req: Request, res: Response, next: NextFunctio
   }
 });
 
-productsRouter.post('/', requireAuth, (_req: Request, res: Response) => {
-  res.status(501).json({ error: 'Belum diimplementasikan', code: 'NOT_IMPLEMENTED' });
+productsRouter.post('/', requireMitra, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const parsed = createProductSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({
+        error: parsed.error.errors.map((e) => e.message).join(', '),
+        code: 'VALIDATION_ERROR',
+      });
+      return;
+    }
+
+    const product = await create({
+      ...parsed.data,
+      mitraId: req.user!.userId,
+    });
+
+    res.status(201).json({ product });
+  } catch (err) {
+    next(err);
+  }
 });

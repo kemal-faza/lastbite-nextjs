@@ -1,48 +1,92 @@
 'use client';
 
-import { useState } from 'react';
-import { ArrowLeft, Camera } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { ArrowLeft, Camera, Upload, X, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { createProduct, uploadImage } from '@/lib/api/products';
 
-const menuOptions = [
-  'Pilih menu',
-  'Roti Coklat',
-  'Roti Keju',
-  'Roti Pisang',
-  'Ayam Geprek',
+const CATEGORIES = [
+  { value: 'meals', label: 'Makanan' },
+  { value: 'bakery', label: 'Roti & Kue' },
+  { value: 'drinks', label: 'Minuman' },
 ];
 
 export default function AddProductPage() {
   const router = useRouter();
-  const [productName, setProductName] = useState('');
-  const [quantity, setQuantity] = useState('');
-  const [price, setPrice] = useState('');
-  const [notes, setNotes] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [category, setCategory] = useState('meals');
+  const [originalPrice, setOriginalPrice] = useState('');
+  const [discountedPrice, setDiscountedPrice] = useState('');
+  const [stock, setStock] = useState('');
+  const [storeName, setStoreName] = useState('');
+  const [storeAddress, setStoreAddress] = useState('');
+  const [expiresAt, setExpiresAt] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const clearImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!productName || !quantity || !price) {
-      alert('Mohon isi nama produk, jumlah, dan harga!');
+    setError(null);
+
+    if (!name || !originalPrice || !discountedPrice || !stock || !storeName || !expiresAt) {
+      setError('Mohon isi semua field yang wajib diisi');
       return;
     }
-    const saved = JSON.parse(localStorage.getItem('lastbite-seller-products') || '[]');
-    saved.push({
-      id: Date.now(),
-      name: productName,
-      quantity: parseInt(quantity) || 0,
-      price: parseInt(price) || 0,
-      sold: 0,
-      notes: notes,
-    });
-    localStorage.setItem('lastbite-seller-products', JSON.stringify(saved));
-    router.push('/seller');
+
+    setSubmitting(true);
+
+    try {
+      let imageUrl: string | null = null;
+
+      if (imageFile) {
+        const uploadResult = await uploadImage(imageFile);
+        imageUrl = uploadResult.url;
+      }
+
+      await createProduct({
+        name,
+        description: description || undefined,
+        category,
+        originalPrice: parseInt(originalPrice),
+        discountedPrice: parseInt(discountedPrice),
+        stock: parseInt(stock),
+        imageUrl,
+        storeName,
+        storeAddress: storeAddress || undefined,
+        expiresAt: new Date(expiresAt).toISOString(),
+      });
+
+      router.push('/seller');
+    } catch (err: any) {
+      setError(err.message || 'Gagal menambahkan produk');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
     <div className="size-full flex flex-col bg-[var(--background)] overflow-hidden relative max-w-md mx-auto min-h-[100dvh] shadow-xl">
-      {/* Header */}
       <header className="bg-[var(--primary)] text-white px-4 py-4 shadow-md">
         <div className="flex items-center gap-3">
           <button
@@ -55,87 +99,172 @@ export default function AddProductPage() {
         </div>
       </header>
 
-      {/* Form */}
       <div className="flex-1 overflow-y-auto px-4 pt-6 pb-8">
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Nama Produk */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">
               Nama Produk <span className="text-[var(--destructive)]">*</span>
             </label>
+            <Input
+              type="text"
+              placeholder="Contoh: Roti Coklat"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">
+              Kategori <span className="text-[var(--destructive)]">*</span>
+            </label>
             <select
-              value={productName}
-              onChange={(e) => setProductName(e.target.value)}
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
               className="flex h-9 w-full min-w-0 rounded-md border border-input bg-input-background px-3 py-1 text-base transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] md:text-sm"
             >
-              {menuOptions.map((opt) => (
-                <option key={opt} value={opt === 'Pilih menu' ? '' : opt} disabled={opt === 'Pilih menu'}>
-                  {opt}
-                </option>
+              {CATEGORIES.map((cat) => (
+                <option key={cat.value} value={cat.value}>{cat.label}</option>
               ))}
             </select>
           </div>
 
-          {/* Jumlah Sisa */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">
-              Jumlah Sisa <span className="text-[var(--destructive)]">*</span>
-            </label>
-            <Input
-              type="number"
-              placeholder="8"
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-              min="0"
-            />
-          </div>
-
-          {/* Harga Diskon */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">
-              Harga Diskon (per pcs) <span className="text-[var(--destructive)]">*</span>
-            </label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500 font-medium">
-                Rp
-              </span>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Harga Normal (Rp) <span className="text-[var(--destructive)]">*</span>
+              </label>
               <Input
                 type="number"
-                placeholder="3.000"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                className="pl-10"
-                min="0"
+                placeholder="20000"
+                value={originalPrice}
+                onChange={(e) => setOriginalPrice(e.target.value)}
+                min="100"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Harga Diskon (Rp) <span className="text-[var(--destructive)]">*</span>
+              </label>
+              <Input
+                type="number"
+                placeholder="10000"
+                value={discountedPrice}
+                onChange={(e) => setDiscountedPrice(e.target.value)}
+                min="100"
               />
             </div>
           </div>
 
-          {/* Catatan */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Catatan</label>
+            <label className="text-sm font-medium text-gray-700">
+              Jumlah Stok <span className="text-[var(--destructive)]">*</span>
+            </label>
+            <Input
+              type="number"
+              placeholder="8"
+              value={stock}
+              onChange={(e) => setStock(e.target.value)}
+              min="0"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">
+              Nama Toko <span className="text-[var(--destructive)]">*</span>
+            </label>
+            <Input
+              type="text"
+              placeholder="Contoh: Roti Ibu Tutik"
+              value={storeName}
+              onChange={(e) => setStoreName(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">Alamat Toko</label>
+            <Input
+              type="text"
+              placeholder="Contoh: Jl. Melati No. 8"
+              value={storeAddress}
+              onChange={(e) => setStoreAddress(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">
+              Batas Waktu Pengambilan <span className="text-[var(--destructive)]">*</span>
+            </label>
+            <Input
+              type="datetime-local"
+              value={expiresAt}
+              onChange={(e) => setExpiresAt(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">Deskripsi Produk</label>
             <Textarea
-              placeholder="Tanpa bahan pengawet, dipanggang pagi ini"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Deskripsi produk..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
               rows={3}
             />
           </div>
 
-          {/* Upload Foto */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Upload Foto</label>
-            <div className="border-2 border-dashed border-gray-300 rounded-2xl px-4 py-8 flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:border-gray-400 transition-colors">
-              <Camera className="w-8 h-8 mb-2" />
-              <span className="text-sm">Ketuk untuk mengunggah foto</span>
-            </div>
+            <label className="text-sm font-medium text-gray-700">Foto Produk</label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            {imagePreview ? (
+              <div className="relative rounded-2xl overflow-hidden">
+                <img src={imagePreview} alt="Preview" className="w-full h-48 object-cover" />
+                <button
+                  type="button"
+                  onClick={clearImage}
+                  className="absolute top-2 right-2 p-1 bg-black/50 text-white rounded-full hover:bg-black/70"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full border-2 border-dashed border-gray-300 rounded-2xl px-4 py-8 flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:border-gray-400 transition-colors"
+              >
+                <Camera className="w-8 h-8 mb-2" />
+                <span className="text-sm">Ketuk untuk mengunggah foto</span>
+              </button>
+            )}
           </div>
 
-          {/* Submit */}
           <button
             type="submit"
-            className="w-full bg-[var(--primary)] text-white font-semibold py-4 rounded-2xl hover:bg-[var(--primary)]/90 transition-colors shadow-sm"
+            disabled={submitting}
+            className="w-full bg-[var(--primary)] text-white font-semibold py-4 rounded-2xl hover:bg-[var(--primary)]/90 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            Upload Produk
+            {submitting ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Mengunggah...
+              </>
+            ) : (
+              <>
+                <Upload className="w-5 h-5" />
+                Upload Produk
+              </>
+            )}
           </button>
         </form>
       </div>
