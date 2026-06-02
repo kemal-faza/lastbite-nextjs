@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useCart } from '@/lib/context/CartContext';
 import { useWishlist } from '@/lib/context/WishlistContext';
 import { ImageWithFallback } from './ImageWithFallback';
-import { formatExpiry, toNumericId } from '@/lib/utils/date';
+import { formatExpiry } from '@/lib/utils/date';
 
 interface ProductCardProps {
   product: ProductData;
@@ -19,8 +19,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const router = useRouter();
   const { items: cartItems, addItem, clearCart } = useCart();
   const { toggle, isWishlisted } = useWishlist();
-  const numericId = toNumericId(product.id);
-  const isFav = isWishlisted(numericId);
+  const isFav = isWishlisted(product.id);
 
   const handleAddToCart = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -34,18 +33,11 @@ export function ProductCard({ product }: ProductCardProps) {
     }
 
     setIsAdded(true);
-    addItem({
-      id: numericId,
-      name: product.name,
-      store: product.storeName,
-      price: product.discountedPrice,
-      originalPrice: product.originalPrice,
-      image: product.imageUrl || '',
-    });
+    addItem(product.id);
     setTimeout(() => {
       setIsAdded(false);
     }, 2000);
-  }, [product, numericId, addItem, cartItems, clearCart]);
+  }, [product, addItem, cartItems, clearCart]);
 
   const expiryText = formatExpiry(product.expiresAt);
 
@@ -63,7 +55,7 @@ export function ProductCard({ product }: ProductCardProps) {
           className="w-full h-48 object-cover"
         />
         <button
-          onClick={(e) => { e.stopPropagation(); toggle(numericId); }}
+          onClick={(e) => { e.stopPropagation(); toggle(product.id); }}
           className="absolute bottom-3 left-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:bg-white transition-all z-10"
           aria-label={isFav ? 'Hapus dari favorit' : 'Tambah ke favorit'}
         >

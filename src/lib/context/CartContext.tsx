@@ -1,108 +1,161 @@
 'use client';
 
-import { createContext, useContext, useReducer, type ReactNode } from 'react';
-import { products } from '@/lib/data/products';
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+  type ReactNode,
+} from 'react';
+import { useAuth } from '@/lib/context/AuthContext';
+import {
+  fetchCart,
+  addToCart as apiAddToCart,
+  updateCartItem,
+  removeCartItem,
+  clearCart as apiClearCart,
+  type CartData,
+  type CartItemData,
+  type CartProductData,
+} from '@/lib/api/cart';
+import { toast } from 'sonner';
 
 export interface CartItem {
-  id: number;
+  id: string;
+  productId: string;
   name: string;
   store: string;
   price: number;
   originalPrice: number;
   image: string;
   quantity: number;
+  stock: number;
 }
 
-type CartAction =
-  | { type: 'ADD_ITEM'; payload: Omit<CartItem, 'quantity'> }
-  | { type: 'REMOVE_ITEM'; payload: { id: number } }
-  | { type: 'UPDATE_QUANTITY'; payload: { id: number; delta: number } }
-  | { type: 'CLEAR_CART' };
-
-interface CartState {
-  items: CartItem[];
-}
-
-function cartReducer(state: CartState, action: CartAction): CartState {
-  switch (action.type) {
-    case 'ADD_ITEM': {
-      const existing = state.items.find((i) => i.id === action.payload.id);
-      const product = products.find((p) => p.id === action.payload.id);
-      const maxStock = product ? product.remaining : 99;
-      if (existing) {
-        const newQty = Math.min(maxStock, existing.quantity + 1);
-        return {
-          items: state.items.map((i) =>
-            i.id === action.payload.id
-              ? { ...i, quantity: newQty }
-              : i
-          ),
-        };
-      }
-      return { items: [...state.items, { ...action.payload, quantity: 1 }] };
-    }
-    case 'REMOVE_ITEM':
-      return { items: state.items.filter((i) => i.id !== action.payload.id) };
-    case 'UPDATE_QUANTITY': {
-      const product = products.find((p) => p.id === action.payload.id);
-      const maxStock = product ? product.remaining : 99;
-      return {
-        items: state.items.map((item) => {
-          if (item.id === action.payload.id) {
-            const newQuantity = Math.max(1, Math.min(maxStock, item.quantity + action.payload.delta));
-            return { ...item, quantity: newQuantity };
-          }
-          return item;
-        }),
-      };
-    }
-    case 'CLEAR_CART':
-      return { items: [] };
-    default:
-      return state;
-  }
+function toCartItem(item: CartItemData): CartItem {
+  const p: CartProductData = item.product;
+  return {
+    id: item.id,
+    productId: item.productId,
+    name: p.name,
+    store: p.storeName,
+    price: p.discountedPrice,
+    originalPrice: p.originalPrice,
+    image: p.imageUrl || '/placeholder.png',
+    quantity: item.quantity,
+    stock: p.stock,
+  };
 }
 
 const CartContext = createContext<{
   items: CartItem[];
-  addItem: (item: Omit<CartItem, 'quantity'>) => void;
-  removeItem: (id: number) => void;
-  updateQuantity: (id: number, delta: number) => void;
-  clearCart: () => void;
+  loading: boolean;
+  addItem: (productId: string, quantity?: number) => Promise<void>;
+  removeItem: (productId: string) => Promise<void>;
+  updateQuantity: (productId: string, delta: number) => Promise<void>;
+  clearCart: () => Promise<void>;
   itemCount: number;
   subtotal: number;
   currentStore: string | null;
 } | null>(null);
+
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(cartReducer, { items: [] });
+  const { user } = useAuth();
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const addItem = (item: Omit<CartItem, 'quantity'>) =>
-    dispatch({ type: 'ADD_ITEM', payload: item });
+  useEffect(() => {
+    if (!user) {
+      setItems([]);
+      return;
+    }
+    setLoading(true);
+    fetchCart()
+      .then((data) => setItems(data.items.map(toCartItem)))
+      .catch((err) => {
+        if (err.status !== 401) {
+          console.error('Failed to load cart:', err);
+        }
+      })
+      .finally(() => setLoading(false));
+  }, [user?.id]);
 
-  const removeItem = (id: number) =>
-    dispatch({ type: 'REMOVE_ITEM', payload: { id } });
+  const addItem = useCallback(async (productId: string, quantity: number = 1) => {
+    try {
+      const data = await apiAddToCart(productId, quantity);
+      setItems(data.items.map(toCartItem));
+    } catch (err: unknown) {
+      const apiErr = err as { status?: number; code?: string; message?: string };
+      if (apiErr.code === 'DIFFERENT_STORE') {
+        toast.error('Keranjang hanya bisa berisi produk dari satu toko.');
+      } else if (apiErr.code === 'INSUFFICIENT_STOCK') {
+        toast.error(apiErr.message || 'Stok tidak mencukupi.');
+      } else if (apiErr.status === 401) {
+        toast.error('Silakan login untuk menambah ke keranjang.');
+      } else {
+        toast.error('Gagal menambah ke keranjang.');
+      }
+    }
+  }, []);
 
-  const updateQuantity = (id: number, delta: number) =>
-    dispatch({ type: 'UPDATE_QUANTITY', payload: { id, delta } });
+  const removeItem = useCallback(async (productId: string) => {
+    try {
+      const data = await removeCartItem(productId);
+      setItems(data.items.map(toCartItem));
+    } catch {
+      toast.error('Gagal menghapus item.');
+    }
+  }, []);
 
-  const clearCart = () => dispatch({ type: 'CLEAR_CART' });
+  const updateQuantity = useCallback(async (productId: string, delta: number) => {
+    const item = items.find((i) => i.productId === productId);
+    if (!item) return;
 
-  const itemCount = state.items.reduce((sum, i) => sum + i.quantity, 0);
-  const subtotal = state.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const currentStore = state.items.length > 0 ? state.items[0].store : null;
+    const newQty = item.quantity + delta;
+    if (newQty < 1) {
+      return removeItem(productId);
+    }
+    if (newQty > item.stock) {
+      toast.error('Stok tidak mencukupi.');
+      return;
+    }
+
+    try {
+      const data = await updateCartItem(productId, newQty);
+      setItems(data.items.map(toCartItem));
+    } catch {
+      toast.error('Gagal mengubah jumlah.');
+    }
+  }, [items, removeItem]);
+
+  const clearCartFn = useCallback(async () => {
+    try {
+      await apiClearCart();
+      setItems([]);
+    } catch {
+      toast.error('Gagal mengosongkan keranjang.');
+    }
+  }, []);
+
+  const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
+  const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const currentStore = items.length > 0 ? items[0].store : null;
 
   return (
     <CartContext.Provider
       value={{
-        items: state.items,
+        items,
+        loading,
         addItem,
         removeItem,
         updateQuantity,
-        clearCart,
+        clearCart: clearCartFn,
         itemCount,
         subtotal,
         currentStore,
-      }}>
+      }}
+    >
       {children}
     </CartContext.Provider>
   );

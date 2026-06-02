@@ -20,7 +20,7 @@ import { useWishlist } from '@/lib/context/WishlistContext';
 import { QueueIndicator } from '@/components/QueueIndicator';
 import { MapModal } from '@/components/MapModal';
 import { useState } from 'react';
-import { formatExpiry, toNumericId } from '@/lib/utils/date';
+import { formatExpiry } from '@/lib/utils/date';
 
 function LoadingSkeleton() {
 	return (
@@ -78,8 +78,7 @@ export default function DetailProductPage() {
 	const { items: cartItems, addItem, clearCart } = useCart();
 	const [isMapOpen, setIsMapOpen] = useState(false);
 	const { toggle, isWishlisted } = useWishlist();
-	const numericId = product ? toNumericId(product.id) : 0;
-	const isFav = isWishlisted(numericId);
+	const isFav = isWishlisted(product?.id || '');
 
 	if (loading) {
 		return <LoadingSkeleton />;
@@ -102,7 +101,7 @@ export default function DetailProductPage() {
 		);
 	}
 
-	const cartItem = cartItems.find((item) => item.id === numericId);
+	const cartItem = cartItems.find((item) => item.productId === product.id);
 	const isOutOfStock = product.stock <= 0;
 	const isCartFull = cartItem ? cartItem.quantity >= product.stock : false;
 	const cannotBuy = isOutOfStock || isCartFull;
@@ -140,7 +139,7 @@ export default function DetailProductPage() {
 					<button
 						onClick={(e) => {
 							e.stopPropagation();
-							toggle(numericId);
+							toggle(product.id);
 						}}
 						className="absolute bottom-3 left-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:bg-white transition-all z-10"
 						aria-label={
@@ -351,14 +350,7 @@ export default function DetailProductPage() {
 							if (!confirmed) return;
 							clearCart();
 						}
-						addItem({
-							id: numericId,
-							name: product.name,
-							store: product.storeName,
-							price: product.discountedPrice,
-							originalPrice: product.originalPrice,
-							image: product.imageUrl || '',
-						});
+						addItem(product.id);
 						router.push('/cart');
 					}}
 					className={

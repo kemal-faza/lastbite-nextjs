@@ -4,7 +4,7 @@ import { createContext, useContext, useReducer, type ReactNode } from 'react';
 import { useEffect } from 'react';
 
 export interface OrderItem {
-  id: number;
+  id: string;
   name: string;
   store: string;
   price: number;
@@ -53,7 +53,7 @@ function normalizeOrderItem(value: unknown): OrderItem | null {
   if (typeof value !== 'object' || value === null) return null;
   const item = value as Record<string, unknown>;
   if (
-    typeof item.id !== 'number' ||
+    typeof item.id !== 'string' ||
     typeof item.name !== 'string' ||
     typeof item.store !== 'string' ||
     typeof item.price !== 'number' ||

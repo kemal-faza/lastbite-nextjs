@@ -18,7 +18,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { useCart } from '@/lib/context/CartContext';
 import { useOrders } from '@/lib/context/OrderContext';
-import { products } from '@/lib/data/products';
+
 
 const STEPS = ['Keranjang', 'Konfirmasi'];
 
@@ -170,8 +170,7 @@ export default function CartPage() {
 		<div className="p-4 space-y-4">
 			<div className="bg-white rounded-2xl shadow-sm overflow-hidden">
 				{items.map((item, index) => {
-					const productMaster = products.find((p) => p.id === item.id);
-					const maxStock = productMaster ? productMaster.remaining : 99;
+					const maxStock = item.stock;
 					const isMaxStockReached = item.quantity >= maxStock;
 
 					return (
@@ -200,7 +199,7 @@ export default function CartPage() {
 											</p>
 										</div>
 										<button
-											onClick={() => removeItem(item.id)}
+											onClick={() => removeItem(item.productId)}
 											className="p-1 -mr-1 hover:bg-red-50 rounded-lg transition-colors"
 											aria-label={'Hapus ' + item.name}>
 											<Trash2 className="w-4 h-4 text-red-400 hover:text-red-600" />
@@ -223,7 +222,7 @@ export default function CartPage() {
 										<div className="flex items-center gap-3 bg-gray-50 rounded-full px-2 py-1 border border-gray-200">
 											<button
 												onClick={() =>
-													updateQuantity(item.id, -1)
+													updateQuantity(item.productId, -1)
 												}
 												className="w-7 h-7 rounded-full bg-white flex items-center justify-center shadow-sm text-gray-600 active:scale-95 transition-transform hover:shadow-md"
 												aria-label="Kurangi jumlah">
@@ -234,7 +233,7 @@ export default function CartPage() {
 											</span>
 											<button
 												onClick={() =>
-													updateQuantity(item.id, 1)
+													updateQuantity(item.productId, 1)
 												}
 												disabled={isMaxStockReached}
 												className={
