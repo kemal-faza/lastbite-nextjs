@@ -1,5 +1,6 @@
 import { prisma } from '../lib/prisma.js';
 import type { OrderStatus } from '@prisma/client';
+import { createNotification } from './notificationService.js';
 
 export class MitraOrderError extends Error {
   constructor(message: string, public code: string) {
@@ -141,6 +142,8 @@ export async function updateOrderStatus(
       }
     });
 
+    await notifyOrderStatusChange(order.userId, orderId, 'CANCELLED');
+
     const updated = await prisma.order.findUnique({
       where: { id: orderId },
       include: { items: { select: { id: true, name: true, price: true, quantity: true, imageUrl: true } } },
@@ -154,5 +157,26 @@ export async function updateOrderStatus(
     include: { items: { select: { id: true, name: true, price: true, quantity: true, imageUrl: true } } },
   });
 
+  await notifyOrderStatusChange(order.userId, orderId, newStatus);
+
   return toOrderResponse(updated);
+}
+
+const STATUS_LABELS: Record<string, string> = {
+  PROCESSED: 'sedang diproses',
+  READY: 'siap diambil',
+  PICKED_UP: 'sudah diambil',
+  CANCELLED: 'dibatalkan',
+};
+
+async function notifyOrderStatusChange(userId: string, orderId: string, newStatus: string) {
+  const label = STATUS_LABELS[newStatus] || newStatus.toLowerCase();
+
+  await createNotification({
+    userId,
+    title: 'Status Pesanan Diperbarui',
+    body: `Pesanan kamu ${label} oleh mitra`,
+    type: 'order_status',
+    data: { orderId, status: newStatus },
+  });
 }

@@ -114,6 +114,17 @@ export async function createOrder(userId: string, input: CreateOrderInput) {
       data: { storeName: null },
     });
 
+    // Create notification for the buyer
+    await tx.notification.create({
+      data: {
+        userId,
+        title: 'Pesanan Berhasil Dibuat',
+        body: `Pesanan kamu di ${cart.storeName} telah dibuat. Kode pickup: ${order.pickupCode}`,
+        type: 'order_status',
+        data: { orderId: order.id, pickupCode: order.pickupCode },
+      },
+    });
+
     return order;
   });
 }
