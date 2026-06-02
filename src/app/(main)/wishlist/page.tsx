@@ -3,31 +3,64 @@
 import { Heart, ShoppingBag, ArrowLeft, Bell } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useWishlist } from '@/lib/context/WishlistContext';
-import { fetchWishlistProducts } from '@/lib/api/wishlist';
+import { fetchWishlistProducts, subscribeToStockAlert, unsubscribeFromStockAlert, getStockAlertSubscriptions } from '@/lib/api/wishlist';
 import type { ProductData } from '@/lib/api/products';
 import { ProductCard } from '@/components/ProductCard';
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/lib/context/AuthContext';
+import { toast } from 'sonner';
 
 function WishlistItem({ product }: { product: ProductData }) {
-  const [notifActive, setNotifActive] = useState(false);
+  const [subscribed, setSubscribed] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    getStockAlertSubscriptions().then((ids) => setSubscribed(ids.includes(product.id)));
+  }, [product.id, isAuthenticated]);
+
+  const handleToggle = async () => {
+    if (!isAuthenticated) return;
+    setLoading(true);
+    try {
+      if (subscribed) {
+        await unsubscribeFromStockAlert(product.id);
+        setSubscribed(false);
+        toast.success('Notifikasi stok dinonaktifkan');
+      } else {
+        await subscribeToStockAlert(product.id);
+        setSubscribed(true);
+        toast.success('Kamu akan diberi tahu saat stok tersedia kembali');
+      }
+    } catch {
+      toast.error('Gagal mengubah pengaturan notifikasi');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="bg-white rounded-2xl p-2.5 border border-gray-100 flex flex-col gap-2.5 shadow-sm">
       <ProductCard product={product} />
       <div className="flex items-center justify-between pt-2 border-t border-gray-50 px-1">
         <span className="text-[10px] font-medium text-gray-500">
-          {notifActive ? 'Notifikasi stok aktif' : 'Kabari saya jika stok tersedia kembali'}
+          {subscribed ? 'Kamu akan diberi tahu saat stok tersedia' : 'Kabari saya jika stok tersedia kembali'}
         </span>
-        <button
-          onClick={() => setNotifActive(!notifActive)}
-          className={`p-1.5 rounded-xl border transition-all flex items-center gap-1 text-[10px] font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-1 ${
-            notifActive
-              ? 'bg-amber-50 border-amber-200 text-amber-700'
-              : 'bg-gray-50 border-gray-100 text-gray-600 hover:bg-gray-100'
-          }`}
-        >
-          <Bell className={`w-3 h-3 ${notifActive ? 'fill-amber-600' : ''}`} />
-          {notifActive ? 'Aktif' : 'Ingatkan'}
-        </button>
+        {isAuthenticated && (
+          <button
+            onClick={handleToggle}
+            disabled={loading}
+            className={`p-1.5 rounded-xl border transition-all flex items-center gap-1 text-[10px] font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-1 disabled:opacity-50 ${
+              subscribed
+                ? 'bg-amber-50 border-amber-200 text-amber-700'
+                : 'bg-gray-50 border-gray-100 text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            <Bell className={`w-3 h-3 ${subscribed ? 'fill-amber-600' : ''}`} />
+            {loading ? '...' : subscribed ? 'Aktif' : 'Ingatkan'}
+          </button>
+        )}
       </div>
     </div>
   );
