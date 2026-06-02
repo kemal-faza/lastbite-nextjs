@@ -29,3 +29,9 @@ export const updateMitraProductSchema = z.object({
   expiresAt: z.string().datetime().optional(),
   isActive: z.boolean().optional(),
 });
+
+export const updateOrderStatusSchema = z.object({
+  status: z.enum(['PROCESSED', 'READY', 'PICKED_UP', 'CANCELLED'], {
+    errorMap: () => ({ message: 'Status tidak valid' }),
+  }),
+});

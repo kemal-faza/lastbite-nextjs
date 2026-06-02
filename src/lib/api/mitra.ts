@@ -81,3 +81,37 @@ export interface MitraStats {
 export async function fetchMitraStats(): Promise<{ stats: MitraStats }> {
   return apiFetch<{ stats: MitraStats }>('/mitra/stats', { auth: true });
 }
+
+export interface MitraOrderItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  imageUrl: string | null;
+}
+
+export interface MitraOrder {
+  id: string;
+  status: string;
+  pickupCode: string;
+  pickupExpiresAt: string;
+  totalAmount: number;
+  savingAmount: number;
+  buyerName: string;
+  buyerPhone: string;
+  notes: string | null;
+  items: MitraOrderItem[];
+  createdAt: string;
+}
+
+export async function fetchMitraOrders(): Promise<{ orders: MitraOrder[] }> {
+  return apiFetch<{ orders: MitraOrder[] }>('/mitra/orders', { auth: true });
+}
+
+export async function updateMitraOrderStatus(orderId: string, status: string): Promise<{ order: MitraOrder }> {
+  return apiFetch<{ order: MitraOrder }>(`/mitra/orders/${orderId}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+    auth: true,
+  });
+}

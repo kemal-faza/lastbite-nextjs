@@ -3,7 +3,8 @@ import { requireAuth, requireMitra } from '../middleware/auth.js';
 import { registerMitra, getMitraProfile, updateMitraProfile, MitraError } from '../services/mitraService.js';
 import { getMitraProducts, updateMitraProduct, deleteMitraProduct, MitraProductError } from '../services/mitraProductService.js';
 import { getMitraStats } from '../services/mitraStatsService.js';
-import { registerMitraSchema, updateMitraProfileSchema, updateMitraProductSchema } from '../validators/mitra.js';
+import { getStoreOrders, updateOrderStatus, MitraOrderError } from '../services/mitraOrderService.js';
+import { registerMitraSchema, updateMitraProfileSchema, updateMitraProductSchema, updateOrderStatusSchema } from '../validators/mitra.js';
 
 export const mitraRouter = Router();
 
@@ -125,6 +126,40 @@ mitraRouter.get('/stats', requireMitra, async (req: Request, res: Response, next
     const stats = await getMitraStats(req.user!.userId);
     res.json({ stats });
   } catch (err) {
+    next(err);
+  }
+});
+
+// GET /mitra/orders - List incoming orders for mitra's products
+mitraRouter.get('/orders', requireMitra, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const orders = await getStoreOrders(req.user!.userId);
+    res.json({ orders });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PATCH /mitra/orders/:id/status - Update order status
+mitraRouter.patch('/orders/:id/status', requireMitra, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const parsed = updateOrderStatusSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({
+        error: parsed.error.errors.map((e) => e.message).join(', '),
+        code: 'VALIDATION_ERROR',
+      });
+      return;
+    }
+
+    const order = await updateOrderStatus(req.user!.userId, req.params.id as string, parsed.data.status);
+    res.json({ order });
+  } catch (err) {
+    if (err instanceof MitraOrderError) {
+      const status = err.code === 'INVALID_TRANSITION' ? 400 : 404;
+      res.status(status).json({ error: err.message, code: err.code });
+      return;
+    }
     next(err);
   }
 });
