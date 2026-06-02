@@ -10,4 +10,17 @@ export const config = {
   otpLength: 6,
   bcryptSaltRounds: 12,
   corsOrigins: (process.env.CORS_ORIGINS || 'http://localhost:3000').split(','),
+  upload: {
+    provider: (process.env.UPLOAD_PROVIDER || 'local') as 'local' | 's3',
+    localDir: process.env.UPLOAD_LOCAL_DIR || 'uploads',
+    maxFileSize: parseInt(process.env.UPLOAD_MAX_SIZE || '5242880', 10),
+    s3: {
+      region: process.env.S3_REGION || 'ap-southeast-1',
+      bucket: process.env.S3_BUCKET || 'lastbite-uploads',
+      accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
+      secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
+      endpoint: process.env.S3_ENDPOINT || undefined,
+      publicUrl: process.env.S3_PUBLIC_URL || undefined,
+    },
+  },
 } as const;
