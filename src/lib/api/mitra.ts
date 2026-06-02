@@ -69,3 +69,15 @@ export async function updateMitraProduct(id: string, data: Partial<{
 export async function deleteMitraProduct(id: string): Promise<void> {
   await apiFetch(`/mitra/products/${id}`, { method: 'DELETE', auth: true });
 }
+
+export interface MitraStats {
+  totalStock: number;
+  totalSold: number;
+  remaining: number;
+  productCount: number;
+  activeOrders: number;
+}
+
+export async function fetchMitraStats(): Promise<{ stats: MitraStats }> {
+  return apiFetch<{ stats: MitraStats }>('/mitra/stats', { auth: true });
+}

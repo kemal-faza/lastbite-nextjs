@@ -2,6 +2,7 @@ import { Router, type Request, type Response, type NextFunction } from 'express'
 import { requireAuth, requireMitra } from '../middleware/auth.js';
 import { registerMitra, getMitraProfile, updateMitraProfile, MitraError } from '../services/mitraService.js';
 import { getMitraProducts, updateMitraProduct, deleteMitraProduct, MitraProductError } from '../services/mitraProductService.js';
+import { getMitraStats } from '../services/mitraStatsService.js';
 import { registerMitraSchema, updateMitraProfileSchema, updateMitraProductSchema } from '../validators/mitra.js';
 
 export const mitraRouter = Router();
@@ -114,6 +115,16 @@ mitraRouter.delete('/products/:id', requireMitra, async (req: Request, res: Resp
       res.status(404).json({ error: err.message, code: err.code });
       return;
     }
+    next(err);
+  }
+});
+
+// GET /mitra/stats - Get mitra stats (stock, sold, remaining, active orders)
+mitraRouter.get('/stats', requireMitra, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const stats = await getMitraStats(req.user!.userId);
+    res.json({ stats });
+  } catch (err) {
     next(err);
   }
 });
