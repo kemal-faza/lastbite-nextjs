@@ -37,6 +37,7 @@ export interface ProductResponse {
   storeAddress: string | null;
   storeLat: number | null;
   storeLng: number | null;
+  distanceKm?: number;
   expiresAt: string;
   isActive: boolean;
   createdAt: string;
@@ -77,4 +78,12 @@ export interface MitraStatsResponse {
   remaining: number;
   productCount: number;
   activeOrders: number;
+}
+
+export interface SalesTrendEntry {
+  date: string;
+  totalOrders: number;
+  totalItems: number;
+  totalRevenue: number;
+  totalSavings: number;
 }
