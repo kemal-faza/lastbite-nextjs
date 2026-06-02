@@ -11,6 +11,8 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
+  await prisma.orderItem.deleteMany();
+  await prisma.order.deleteMany();
   await prisma.cartItem.deleteMany();
   await prisma.cart.deleteMany();
   await prisma.product.deleteMany();

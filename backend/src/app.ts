@@ -6,6 +6,7 @@ import { authRouter } from './routes/auth.js';
 import { usersRouter } from './routes/users.js';
 import { productsRouter } from './routes/products.js';
 import { cartRouter } from './routes/cart.js';
+import { ordersRouter } from './routes/orders.js';
 import { uploadsRouter } from './routes/uploads.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { config } from './config.js';
@@ -38,6 +39,7 @@ export function createApp() {
   app.use('/users', usersRouter);
   app.use('/products', productsRouter);
   app.use('/cart', cartRouter);
+  app.use('/orders', ordersRouter);
   app.use('/uploads', uploadsRouter);
 
   app.use(errorHandler);
