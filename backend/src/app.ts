@@ -12,6 +12,7 @@ import { mitraRouter } from './routes/mitra.js';
 import { devicesRouter } from './routes/devices.js';
 import { notificationsRouter } from './routes/notifications.js';
 import { wishlistSubscriptionsRouter } from './routes/wishlist-subscriptions.js';
+import { reviewsRouter } from './routes/reviews.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { config } from './config.js';
 
@@ -49,6 +50,7 @@ export function createApp() {
   app.use('/devices', devicesRouter);
   app.use('/notifications', notificationsRouter);
   app.use('/wishlist-subscriptions', wishlistSubscriptionsRouter);
+  app.use('/reviews', reviewsRouter);
 
   app.use(errorHandler);
 
