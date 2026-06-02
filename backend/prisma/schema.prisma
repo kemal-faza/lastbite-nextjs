@@ -38,6 +38,7 @@ model User {
   deviceTokens              DeviceToken[]
   wishlistSubscriptions     WishlistSubscription[]
   notifications             Notification[]
+  reviews                   Review[]
 
   @@map("users")
 }
@@ -59,6 +60,7 @@ model Product {
   mitraId         String?
   mitra           User?     @relation(fields: [mitraId], references: [id])
   cartItems       CartItem[]
+  reviews         Review[]
   isActive        Boolean                           @default(true)
   createdAt       DateTime                          @default(now())
   updatedAt       DateTime                          @updatedAt
@@ -123,6 +125,7 @@ model Order {
   buyerPhone      String
   notes           String?
   items           OrderItem[]
+  review          Review?
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
@@ -131,6 +134,27 @@ model Order {
   @@index([userId])
   @@index([pickupCode])
   @@map("orders")
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  orderId   String   @unique
+  userId    String
+  productId String
+  rating    Int      // 1-5
+  comment   String?
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([productId])
+  @@index([productId, createdAt(sort: Desc)])
+  @@index([userId])
+  @@map("reviews")
 }
 
 model OrderItem {
