@@ -2,7 +2,8 @@ import { Router } from 'express';
 import { requireAdmin } from '../middleware/auth.js';
 import { createAuditLog } from '../services/auditLogService.js';
 import { listMitraVerifications, verifyMitra } from '../services/adminMitraService.js';
-import { verifyMitraSchema, paginationSchema } from '../validators/admin.js';
+import { verifyMitraSchema, paginationSchema, userUpdateSchema } from '../validators/admin.js';
+import { listUsers, getUserDetail, updateUser } from '../services/adminUserService.js';
 
 export const adminRouter = Router();
 
@@ -13,6 +14,36 @@ adminRouter.use(requireAdmin);
 
 adminRouter.get('/dashboard', (_req, res) => {
   res.json({ message: 'Admin dashboard placeholder' });
+});
+
+// ---- User Management ----
+
+adminRouter.get('/users', async (req, res) => {
+  const query = paginationSchema.parse(req.query);
+  const role = req.query.role as import('@prisma/client').UserRole | undefined;
+  const search = req.query.search as string | undefined;
+  const result = await listUsers({ role, search, page: query.page, limit: query.limit });
+  res.json(result);
+});
+
+adminRouter.get('/users/:id', async (req, res) => {
+  const user = await getUserDetail(req.params.id);
+  res.json(user);
+});
+
+adminRouter.patch('/users/:id', async (req, res) => {
+  const data = userUpdateSchema.parse(req.body);
+  const user = await updateUser(req.params.id, data);
+
+  await createAuditLog({
+    actorId: req.user!.userId,
+    action: 'user.edit',
+    entity: 'user',
+    entityId: req.params.id,
+    details: data,
+  });
+
+  res.json(user);
 });
 
 // ---- Mitra Verification ----
