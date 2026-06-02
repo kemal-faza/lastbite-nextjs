@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 import type { ProductResponse, ProductListResponse } from '../types/index.js';
 
@@ -64,12 +65,12 @@ function toProductResponse(product: {
 export async function findAll(options: ProductListOptions = {}): Promise<ProductListResponse> {
   const { category, sort = 'newest', page = 1, limit = 20 } = options;
 
-  const where: Record<string, unknown> = { isActive: true };
+  const where: Prisma.ProductWhereInput = { isActive: true };
   if (category) {
-    where.category = category;
+    where.category = category as Prisma.EnumCategoryFilter['equals'];
   }
 
-  let orderBy: Record<string, string>;
+  let orderBy: Prisma.ProductOrderByWithRelationInput;
   switch (sort) {
     case 'price_asc':
       orderBy = { discountedPrice: 'asc' };

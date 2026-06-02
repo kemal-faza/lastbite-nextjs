@@ -45,6 +45,7 @@ interface UseProductsResult {
 }
 
 export function useProducts(params: FetchProductsParams = {}): UseProductsResult {
+  const { category, sort, page, limit } = params;
   const [products, setProducts] = useState<ProductData[]>([]);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -55,7 +56,7 @@ export function useProducts(params: FetchProductsParams = {}): UseProductsResult
     setLoading(true);
     setError(null);
     try {
-      const res: ProductListResponse = await fetchProducts(params);
+      const res: ProductListResponse = await fetchProducts({ category, sort, page, limit });
       setProducts(res.products);
       setTotal(res.total);
       setTotalPages(res.totalPages);
@@ -64,7 +65,7 @@ export function useProducts(params: FetchProductsParams = {}): UseProductsResult
     } finally {
       setLoading(false);
     }
-  }, [params.category, params.sort, params.page, params.limit]);
+  }, [category, sort, page, limit]);
 
   useEffect(() => {
     load();
