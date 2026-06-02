@@ -44,3 +44,13 @@ _Avoid_: wishlist, bookmark, simpan
 Halaman khusus mitra untuk mengelola produk dan melihat performa penjualan. Diakses
 terpisah dari tampilan utama pembeli.
 _Avoid_: seller dashboard, panel penjual
+
+**Notifikasi**:
+Pesan push atau in-app yang dikirim ke Food Saver atau Mitra saat terjadi event penting
+(perubahan status pesanan, stok favorit tersedia kembali, promosi).
+_Avoid_: notification, alert, pemberitahuan
+
+**Verifikasi**:
+Proses konfirmasi identitas atau kepemilikan. Mencakup verifikasi OTP saat registrasi
+dan verifikasi Mitra saat onboarding.
+_Avoid_: validation, confirmation, konfirmasi

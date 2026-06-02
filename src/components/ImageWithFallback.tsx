@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { ShoppingBag } from 'lucide-react';
+import { getImageUrl } from '@/lib/api/products';
 
 interface ImageWithFallbackProps {
   src: string | null | undefined;
@@ -11,10 +12,11 @@ interface ImageWithFallbackProps {
 }
 
 export function ImageWithFallback({ src, alt, className = '', containerClassName = '' }: ImageWithFallbackProps) {
+  const displaySrc = getImageUrl(src ?? null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
-  if (!src || hasError) {
+  if (!displaySrc || hasError) {
     return (
       <div className={`flex items-center justify-center bg-gray-100 ${containerClassName || className}`}>
         <div className="flex flex-col items-center gap-2">
@@ -35,7 +37,7 @@ export function ImageWithFallback({ src, alt, className = '', containerClassName
         </div>
       )}
       <img
-        src={src}
+        src={displaySrc ?? undefined}
         alt={alt}
         className={`${className} ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
         onLoad={() => setIsLoading(false)}

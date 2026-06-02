@@ -1,4 +1,4 @@
-import { apiFetch } from './client';
+import { apiFetch, API_BASE } from './client';
 
 export interface ProductData {
   id: string;
@@ -26,6 +26,13 @@ export interface ProductListResponse {
   page: number;
   limit: number;
   totalPages: number;
+}
+
+export function getImageUrl(url: string | null): string | null {
+  if (!url) return null;
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  // Local upload path -- prefix with API base
+  return `${API_BASE}${url}`;
 }
 
 export interface FetchProductsParams {
@@ -74,7 +81,6 @@ export async function uploadImage(file: File): Promise<{ url: string; key: strin
   const formData = new FormData();
   formData.append('file', file);
 
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
   const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
 
   const res = await fetch(`${API_BASE}/uploads`, {
