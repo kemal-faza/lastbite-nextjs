@@ -1,4 +1,5 @@
 import { prisma } from '../lib/prisma.js';
+import type { SalesTrendEntry } from '../types/index.js';
 
 export class AnalyticsError extends Error {
   constructor(message: string, public code: string) {
@@ -22,14 +23,6 @@ function getPeriodKey(date: Date, granularity: 'daily' | 'weekly' | 'monthly'): 
     case 'monthly':
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
   }
-}
-
-export interface SalesTrendEntry {
-  date: string;
-  totalOrders: number;
-  totalItems: number;
-  totalRevenue: number;
-  totalSavings: number;
 }
 
 export async function getSalesTrend(

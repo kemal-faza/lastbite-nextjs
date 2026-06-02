@@ -150,4 +150,53 @@ describe('GET /mitra/analytics/sales', () => {
       .set('Authorization', `Bearer ${mitraAccessToken}`);
     expect(res.status).toBe(400);
   });
+
+  it('should return 403 for non-mitra user', async () => {
+    const fsUser = await prisma.user.create({
+      data: {
+        email: 'fs-no-mitra@example.com',
+        name: 'FS Not Mitra',
+        passwordHash: 'hash',
+        role: 'FOOD_SAVER',
+        isVerified: true,
+      },
+    });
+    const fsToken = signAccessToken({ userId: fsUser.id, email: fsUser.email });
+
+    const from = new Date(Date.now() - 86400000).toISOString();
+    const to = new Date().toISOString();
+
+    const res = await request(app)
+      .get(`/mitra/analytics/sales?from=${from}&to=${to}`)
+      .set('Authorization', `Bearer ${fsToken}`);
+    expect(res.status).toBe(403);
+  });
+
+  it('should return empty trend for mitra with no products', async () => {
+    const emptyMitraUser = await prisma.user.create({
+      data: {
+        email: 'empty-mitra@example.com',
+        name: 'Empty Mitra',
+        passwordHash: 'hash',
+        role: 'MITRA',
+        isVerified: true,
+        mitraProfile: {
+          create: {
+            storeName: 'Toko Kosong',
+            verificationStatus: 'VERIFIED',
+          },
+        },
+      },
+    });
+    const emptyToken = signAccessToken({ userId: emptyMitraUser.id, email: emptyMitraUser.email });
+
+    const from = new Date(Date.now() - 86400000).toISOString();
+    const to = new Date().toISOString();
+
+    const res = await request(app)
+      .get(`/mitra/analytics/sales?from=${from}&to=${to}`)
+      .set('Authorization', `Bearer ${emptyToken}`);
+    expect(res.status).toBe(200);
+    expect(res.body.trend).toEqual([]);
+  });
 });
