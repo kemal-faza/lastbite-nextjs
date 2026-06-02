@@ -22,3 +22,16 @@ export async function fetchSalesTrend(params: AnalyticsQueryParams): Promise<{ t
   });
   return apiFetch<{ trend: SalesTrendEntry[] }>(`/mitra/analytics/sales?${query}`, { auth: true });
 }
+
+export interface RevenueSummary {
+  totalRevenue: number;
+  totalSavings: number;
+  totalOrders: number;
+  totalItems: number;
+  averageOrderValue: number;
+}
+
+export async function fetchRevenueSummary(params: AnalyticsQueryParams): Promise<{ summary: RevenueSummary }> {
+  const query = new URLSearchParams({ from: params.from, to: params.to });
+  return apiFetch<{ summary: RevenueSummary }>(`/mitra/analytics/revenue?${query}`, { auth: true });
+}

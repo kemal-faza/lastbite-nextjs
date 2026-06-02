@@ -85,3 +85,59 @@ export async function getSalesTrend(
 
   return Array.from(periodMap.values()).sort((a, b) => a.date.localeCompare(b.date));
 }
+
+export interface RevenueSummary {
+  totalRevenue: number;
+  totalSavings: number;
+  totalOrders: number;
+  totalItems: number;
+  averageOrderValue: number;
+}
+
+export async function getRevenueSummary(
+  mitraId: string,
+  from: Date,
+  to: Date
+): Promise<RevenueSummary> {
+  const products = await prisma.product.findMany({
+    where: { mitraId },
+    select: { id: true },
+  });
+  const productIds = products.map((p) => p.id);
+
+  if (productIds.length === 0) {
+    return { totalRevenue: 0, totalSavings: 0, totalOrders: 0, totalItems: 0, averageOrderValue: 0 };
+  }
+
+  const orders = await prisma.order.findMany({
+    where: {
+      status: { in: ['PICKED_UP', 'READY'] },
+      createdAt: { gte: from, lte: to },
+      items: { some: { productId: { in: productIds } } },
+    },
+    select: {
+      totalAmount: true,
+      savingAmount: true,
+      items: {
+        where: { productId: { in: productIds } },
+        select: { quantity: true },
+      },
+    },
+  });
+
+  const totalRevenue = orders.reduce((sum, o) => sum + o.totalAmount, 0);
+  const totalSavings = orders.reduce((sum, o) => sum + o.savingAmount, 0);
+  const totalOrders = orders.length;
+  const totalItems = orders.reduce(
+    (sum, o) => sum + o.items.reduce((s, i) => s + i.quantity, 0),
+    0
+  );
+
+  return {
+    totalRevenue,
+    totalSavings,
+    totalOrders,
+    totalItems,
+    averageOrderValue: totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0,
+  };
+}

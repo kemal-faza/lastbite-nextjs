@@ -87,3 +87,11 @@ export interface SalesTrendEntry {
   totalRevenue: number;
   totalSavings: number;
 }
+
+export interface RevenueSummary {
+  totalRevenue: number;
+  totalSavings: number;
+  totalOrders: number;
+  totalItems: number;
+  averageOrderValue: number;
+}
