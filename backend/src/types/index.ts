@@ -57,3 +57,24 @@ export interface ProductListResponse extends PaginatedResponse {
 export interface ProductSearchResponse extends PaginatedResponse {
   query: string;
 }
+
+export interface MitraProfileResponse {
+  id: string;
+  userId: string;
+  storeName: string;
+  storeDescription: string | null;
+  storeAddress: string | null;
+  storeLat: number | null;
+  storeLng: number | null;
+  verificationStatus: 'PENDING' | 'VERIFIED' | 'REJECTED';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MitraStatsResponse {
+  totalStock: number;
+  totalSold: number;
+  remaining: number;
+  productCount: number;
+  activeOrders: number;
+}

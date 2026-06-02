@@ -8,6 +8,7 @@ import { productsRouter } from './routes/products.js';
 import { cartRouter } from './routes/cart.js';
 import { ordersRouter } from './routes/orders.js';
 import { uploadsRouter } from './routes/uploads.js';
+import { mitraRouter } from './routes/mitra.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { config } from './config.js';
 
@@ -41,6 +42,7 @@ export function createApp() {
   app.use('/cart', cartRouter);
   app.use('/orders', ordersRouter);
   app.use('/uploads', uploadsRouter);
+  app.use('/mitra', mitraRouter);
 
   app.use(errorHandler);
 
