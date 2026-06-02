@@ -6,6 +6,7 @@ import { verifyMitraSchema, paginationSchema, userUpdateSchema } from '../valida
 import { listUsers, getUserDetail, updateUser } from '../services/adminUserService.js';
 import { listAllProducts, toggleProduct } from '../services/adminProductService.js';
 import { getConfig, updateConfig as updatePlatformConfig } from '../services/platformConfigService.js';
+import { getDashboardStats } from '../services/adminDashboardService.js';
 
 export const adminRouter = Router();
 
@@ -14,8 +15,9 @@ adminRouter.use(requireAdmin);
 
 // ---- Dashboard ----
 
-adminRouter.get('/dashboard', (_req, res) => {
-  res.json({ message: 'Admin dashboard placeholder' });
+adminRouter.get('/dashboard', async (_req, res) => {
+  const stats = await getDashboardStats();
+  res.json(stats);
 });
 
 // ---- User Management ----
