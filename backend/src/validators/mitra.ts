@@ -15,3 +15,17 @@ export const updateMitraProfileSchema = z.object({
   storeLat: z.number().min(-90).max(90).optional().nullable(),
   storeLng: z.number().min(-180).max(180).optional().nullable(),
 });
+
+export const updateMitraProductSchema = z.object({
+  name: z.string().min(1).max(200).optional(),
+  description: z.string().max(1000).optional().nullable(),
+  category: z.enum(['meals', 'bakery', 'drinks']).optional(),
+  originalPrice: z.number().int().positive().optional(),
+  discountedPrice: z.number().int().positive().optional(),
+  stock: z.number().int().min(0).optional(),
+  imageUrl: z.string().url().optional().nullable(),
+  storeName: z.string().min(1).max(200).optional(),
+  storeAddress: z.string().max(500).optional().nullable(),
+  expiresAt: z.string().datetime().optional(),
+  isActive: z.boolean().optional(),
+});

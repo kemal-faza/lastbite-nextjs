@@ -1,4 +1,5 @@
 import { apiFetch } from './client';
+import type { ProductData } from './products';
 
 export interface MitraProfile {
   id: string;
@@ -39,4 +40,32 @@ export async function updateMitraProfile(data: Partial<RegisterMitraInput>): Pro
     body: JSON.stringify(data),
     auth: true,
   });
+}
+
+export async function fetchMitraProducts(): Promise<{ products: ProductData[] }> {
+  return apiFetch<{ products: ProductData[] }>('/mitra/products', { auth: true });
+}
+
+export async function updateMitraProduct(id: string, data: Partial<{
+  name: string;
+  description: string | null;
+  category: string;
+  originalPrice: number;
+  discountedPrice: number;
+  stock: number;
+  imageUrl: string | null;
+  storeName: string;
+  storeAddress: string | null;
+  expiresAt: string;
+  isActive: boolean;
+}>): Promise<{ product: ProductData }> {
+  return apiFetch<{ product: ProductData }>(`/mitra/products/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+    auth: true,
+  });
+}
+
+export async function deleteMitraProduct(id: string): Promise<void> {
+  await apiFetch(`/mitra/products/${id}`, { method: 'DELETE', auth: true });
 }

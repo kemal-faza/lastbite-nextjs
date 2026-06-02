@@ -1,7 +1,8 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
-import { requireAuth } from '../middleware/auth.js';
+import { requireAuth, requireMitra } from '../middleware/auth.js';
 import { registerMitra, getMitraProfile, updateMitraProfile, MitraError } from '../services/mitraService.js';
-import { registerMitraSchema, updateMitraProfileSchema } from '../validators/mitra.js';
+import { getMitraProducts, updateMitraProduct, deleteMitraProduct, MitraProductError } from '../services/mitraProductService.js';
+import { registerMitraSchema, updateMitraProfileSchema, updateMitraProductSchema } from '../validators/mitra.js';
 
 export const mitraRouter = Router();
 
@@ -61,6 +62,55 @@ mitraRouter.patch('/me', async (req: Request, res: Response, next: NextFunction)
     res.json({ profile });
   } catch (err) {
     if (err instanceof MitraError) {
+      res.status(404).json({ error: err.message, code: err.code });
+      return;
+    }
+    next(err);
+  }
+});
+
+// GET /mitra/products - List own products
+mitraRouter.get('/products', requireMitra, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const products = await getMitraProducts(req.user!.userId);
+    res.json({ products });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PATCH /mitra/products/:id - Update own product
+mitraRouter.patch('/products/:id', requireMitra, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const parsed = updateMitraProductSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({
+        error: parsed.error.errors.map((e) => e.message).join(', '),
+        code: 'VALIDATION_ERROR',
+      });
+      return;
+    }
+
+    const productId = req.params.id as string;
+    const product = await updateMitraProduct(req.user!.userId, productId, parsed.data);
+    res.json({ product });
+  } catch (err) {
+    if (err instanceof MitraProductError) {
+      res.status(404).json({ error: err.message, code: err.code });
+      return;
+    }
+    next(err);
+  }
+});
+
+// DELETE /mitra/products/:id - Soft-delete own product
+mitraRouter.delete('/products/:id', requireMitra, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const productId = req.params.id as string;
+    await deleteMitraProduct(req.user!.userId, productId);
+    res.status(204).end();
+  } catch (err) {
+    if (err instanceof MitraProductError) {
       res.status(404).json({ error: err.message, code: err.code });
       return;
     }
