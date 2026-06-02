@@ -1,13 +1,28 @@
 'use client';
 
-import { createContext, useContext, useReducer, type ReactNode } from 'react';
-import { useEffect } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+  type ReactNode,
+} from 'react';
+import { useAuth } from '@/lib/context/AuthContext';
+import {
+  createOrder as apiCreateOrder,
+  fetchOrders,
+  verifyPickup as apiVerifyPickup,
+  type OrderData,
+} from '@/lib/api/orders';
+import { toast } from 'sonner';
 
 export interface OrderItem {
   id: string;
   name: string;
   store: string;
   price: number;
+  originalPrice?: number;
   quantity: number;
   image: string;
 }
@@ -16,213 +31,139 @@ export interface Order {
   id: string;
   items: OrderItem[];
   total: number;
-  paymentMethod: string;
-  name: string;
-  phone: string;
+  saving: number;
+  buyerName: string;
+  buyerPhone: string;
+  storeName: string;
   timestamp: number;
-  status: 'pending-pickup' | 'picked-up';
+  status: string;
   pickupCode: string;
+  pickupExpiresAt: string;
 }
 
-type OrderAction =
-  | {
-      type: 'ADD_ORDER';
-      payload: Omit<Order, 'id' | 'pickupCode' | 'timestamp' | 'status'> & { requestId?: string };
-    }
-  | { type: 'SET_STATUS'; payload: { id: string; status: Order['status'] } };
-
-interface OrderState {
-  orders: Order[];
-}
-
-const ORDER_STORAGE_KEY = 'lastbite-orders';
-const ORDER_STORAGE_TTL_MS = 24 * 60 * 60 * 1000;
-
-function generatePickupCode(): string {
-  return 'LAST-' + (1000 + Math.floor(Math.random() * 9000));
-}
-
-function generateOrderId(): string {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return 'ord-' + crypto.randomUUID();
-  }
-  return 'ord-' + Date.now() + '-' + Math.floor(Math.random() * 1_000_000);
-}
-
-function normalizeOrderItem(value: unknown): OrderItem | null {
-  if (typeof value !== 'object' || value === null) return null;
-  const item = value as Record<string, unknown>;
-  if (
-    typeof item.id !== 'string' ||
-    typeof item.name !== 'string' ||
-    typeof item.store !== 'string' ||
-    typeof item.price !== 'number' ||
-    typeof item.quantity !== 'number' ||
-    typeof item.image !== 'string'
-  ) {
-    return null;
-  }
-
+function toOrder(data: OrderData): Order {
   return {
-    id: item.id,
-    name: item.name,
-    store: item.store,
-    price: item.price,
-    quantity: item.quantity,
-    image: item.image,
+    id: data.id,
+    items: data.items.map((item) => ({
+      id: item.id,
+      name: item.name,
+      store: item.storeName,
+      price: item.price,
+      originalPrice: item.originalPrice,
+      quantity: item.quantity,
+      image: item.imageUrl || '/placeholder.png',
+    })),
+    total: data.totalAmount,
+    saving: data.savingAmount,
+    buyerName: data.buyerName,
+    buyerPhone: data.buyerPhone,
+    storeName: data.storeName,
+    timestamp: new Date(data.createdAt).getTime(),
+    status: data.status,
+    pickupCode: data.pickupCode,
+    pickupExpiresAt: data.pickupExpiresAt,
   };
-}
-
-function normalizeOrder(value: unknown): Order | null {
-  if (typeof value !== 'object' || value === null) return null;
-  const order = value as Record<string, unknown>;
-  if (
-    typeof order.id !== 'string' ||
-    !Array.isArray(order.items) ||
-    typeof order.total !== 'number' ||
-    typeof order.paymentMethod !== 'string' ||
-    typeof order.timestamp !== 'number' ||
-    (order.status !== 'pending-pickup' && order.status !== 'picked-up') ||
-    typeof order.pickupCode !== 'string'
-  ) {
-    return null;
-  }
-
-  const items = order.items
-    .map(normalizeOrderItem)
-    .filter((item): item is OrderItem => item !== null);
-  if (items.length === 0) return null;
-
-  return {
-    id: order.id,
-    items,
-    total: order.total,
-    paymentMethod: order.paymentMethod,
-    name: typeof order.name === 'string' ? order.name : '',
-    phone: typeof order.phone === 'string' ? order.phone : '',
-    timestamp: order.timestamp,
-    status: order.status,
-    pickupCode: order.pickupCode,
-  };
-}
-
-function loadStoredOrders(): OrderState {
-  const initialState: OrderState = { orders: [] };
-  if (typeof window === 'undefined') return initialState;
-  const saved = localStorage.getItem(ORDER_STORAGE_KEY);
-  if (!saved) return initialState;
-
-  try {
-    const parsed = JSON.parse(saved) as unknown;
-    if (typeof parsed !== 'object' || parsed === null) return initialState;
-
-    const payload = parsed as { savedAt?: unknown; orders?: unknown };
-    if (typeof payload.savedAt === 'number' && Date.now() - payload.savedAt > ORDER_STORAGE_TTL_MS) {
-      localStorage.removeItem(ORDER_STORAGE_KEY);
-      return initialState;
-    }
-
-    if (!Array.isArray(payload.orders)) return initialState;
-
-    return {
-      orders: payload.orders
-        .map(normalizeOrder)
-        .filter((order): order is Order => order !== null),
-    };
-  } catch (error) {
-    console.error('Failed to parse stored orders', error);
-    localStorage.removeItem(ORDER_STORAGE_KEY);
-    return initialState;
-  }
-}
-
-function orderReducer(state: OrderState, action: OrderAction): OrderState {
-  switch (action.type) {
-    case 'ADD_ORDER': {
-      if (
-        action.payload.requestId &&
-        state.orders.some((order) => order.id === action.payload.requestId)
-      ) {
-        return state;
-      }
-      const { requestId, ...orderPayload } = action.payload;
-      const newOrder: Order = {
-        ...orderPayload,
-        id: requestId ?? generateOrderId(),
-        pickupCode: generatePickupCode(),
-        timestamp: Date.now(),
-        status: 'pending-pickup',
-      };
-      return { orders: [newOrder, ...state.orders] };
-    }
-    case 'SET_STATUS':
-      return {
-        orders: state.orders.map((o) =>
-          o.id === action.payload.id ? { ...o, status: action.payload.status } : o
-        ),
-      };
-    default:
-      return state;
-  }
 }
 
 const OrderContext = createContext<{
   orders: Order[];
   pendingOrders: Order[];
-  addOrder: (
-    order: Omit<Order, 'id' | 'pickupCode' | 'timestamp' | 'status'>,
-    options?: { requestId?: string }
-  ) => string;
-  markPickedUp: (id: string, pickupCodeInput: string) => boolean;
+  loading: boolean;
+  createOrder: (input: { buyerName: string; buyerPhone: string; notes?: string }) => Promise<string | null>;
+  verifyPickup: (id: string, pickupCode: string) => Promise<boolean>;
+  markPickedUp: (id: string, code: string) => boolean;
   getOrderById: (id: string) => Order | undefined;
   pendingCount: number;
 } | null>(null);
 
 export function OrderProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(orderReducer, { orders: [] }, loadStoredOrders);
+  const { user } = useAuth();
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const safeToPersist = {
-      savedAt: Date.now(),
-      orders: state.orders.map((order) => ({
-        ...order,
-        name: '',
-        phone: '',
-      })),
-    };
-    localStorage.setItem(ORDER_STORAGE_KEY, JSON.stringify(safeToPersist));
-  }, [state]);
+    if (!user) {
+      setOrders([]);
+      return;
+    }
+    setLoading(true);
+    fetchOrders()
+      .then((data) => setOrders(data.map(toOrder)))
+      .catch((err) => {
+        if (err.status !== 401) {
+          console.error('Failed to load orders:', err);
+        }
+      })
+      .finally(() => setLoading(false));
+  }, [user?.id]);
 
-  const addOrder = (
-    order: Omit<Order, 'id' | 'pickupCode' | 'timestamp' | 'status'>,
-    options?: { requestId?: string }
-  ) => {
-    const orderId = options?.requestId ?? generateOrderId();
-    dispatch({ type: 'ADD_ORDER', payload: { ...order, requestId: orderId } });
-    return orderId;
-  };
+  const doCreateOrder = useCallback(
+    async (input: { buyerName: string; buyerPhone: string; notes?: string }): Promise<string | null> => {
+      try {
+        const orderData = await apiCreateOrder(input);
+        setOrders((prev) => [toOrder(orderData), ...prev]);
+        return orderData.id;
+      } catch (err: unknown) {
+        const apiErr = err as { status?: number; code?: string; message?: string };
+        if (apiErr.code === 'CART_EMPTY') {
+          toast.error('Keranjang kosong.');
+        } else if (apiErr.code === 'INSUFFICIENT_STOCK') {
+          toast.error(apiErr.message || 'Stok tidak mencukupi.');
+        } else if (apiErr.status === 401) {
+          toast.error('Silakan login untuk membuat pesanan.');
+        } else {
+          toast.error('Gagal membuat pesanan.');
+        }
+        return null;
+      }
+    },
+    []
+  );
 
-  const markPickedUp = (id: string, pickupCodeInput: string) => {
-    const order = state.orders.find((value) => value.id === id);
-    if (!order || order.status !== 'pending-pickup') return false;
+  const doVerifyPickup = useCallback(async (id: string, pickupCode: string): Promise<boolean> => {
+    try {
+      const orderData = await apiVerifyPickup(id, pickupCode);
+      setOrders((prev) => prev.map((o) => (o.id === id ? toOrder(orderData) : o)));
+      toast.success('Pesanan berhasil diambil!');
+      return true;
+    } catch (err: unknown) {
+      const apiErr = err as { status?: number; code?: string; message?: string };
+      if (apiErr.code === 'INVALID_PICKUP_CODE') {
+        toast.error('Kode pickup tidak sesuai.');
+      } else if (apiErr.code === 'PICKUP_EXPIRED') {
+        toast.error('Kode pickup sudah kadaluarsa.');
+      } else if (apiErr.status === 401) {
+        toast.error('Silakan login untuk verifikasi.');
+      } else {
+        toast.error('Gagal memverifikasi pickup.');
+      }
+      return false;
+    }
+  }, []);
 
-    const normalizedInput = pickupCodeInput.trim().toUpperCase();
-    if (!normalizedInput || normalizedInput !== order.pickupCode) return false;
-
-    dispatch({ type: 'SET_STATUS', payload: { id, status: 'picked-up' } });
+  // Keep markPickedUp for backward compatibility with confirmation page
+  const markPickedUp = useCallback((id: string, code: string): boolean => {
+    doVerifyPickup(id, code);
     return true;
-  };
+  }, [doVerifyPickup]);
 
-  const getOrderById = (id: string) => state.orders.find((order) => order.id === id);
+  const getOrderById = useCallback(
+    (id: string) => orders.find((o) => o.id === id),
+    [orders]
+  );
 
-  const pendingOrders = state.orders.filter((o) => o.status === 'pending-pickup');
+  const pendingOrders = orders.filter(
+    (o) => o.status !== 'PICKED_UP' && o.status !== 'CANCELLED'
+  );
 
   return (
     <OrderContext.Provider
       value={{
-        orders: state.orders,
+        orders,
         pendingOrders,
-        addOrder,
+        loading,
+        createOrder: doCreateOrder,
+        verifyPickup: doVerifyPickup,
         markPickedUp,
         getOrderById,
         pendingCount: pendingOrders.length,

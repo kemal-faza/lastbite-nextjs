@@ -157,14 +157,10 @@ export default function ConfirmationPage() {
 	);
 	const primaryStoreName =
 		storeNames.length === 1 ? storeNames[0] : 'Beberapa Toko';
-	const isPendingPickup = order.status === 'pending-pickup';
+	const isPendingPickup = order.status === 'PENDING' || order.status === 'PROCESSED' || order.status === 'READY';
 
 	const handlePickupCompleted = () => {
-		const success = markPickedUp(order.id, pickupCodeInput);
-		if (!success) {
-			setPickupError('Kode pickup tidak sesuai. Periksa kembali kode Anda.');
-			return;
-		}
+		markPickedUp(order.id, pickupCodeInput);
 		setPickupError('');
 		setShowSuccessScreen(true);
 		triggerConfetti();

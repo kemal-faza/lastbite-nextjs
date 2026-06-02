@@ -50,39 +50,23 @@ export default function CartPage() {
 	const deliveryFee = 0;
 	const total = subtotal;
 
-	const { addOrder } = useOrders();
+	const { createOrder } = useOrders();
 
-	const handleConfirmOrder = () => {
+	const handleConfirmOrder = async () => {
 		if (isSubmittingRef.current || items.length === 0) return;
 
 		isSubmittingRef.current = true;
 		setIsSubmitting(true);
 		try {
-			const orderId = addOrder(
-				{
-					items: items.map((i) => ({
-						id: i.id,
-						name: i.name,
-						store: i.store,
-						price: i.price,
-						quantity: i.quantity,
-						image: i.image,
-					})),
-					total,
-					paymentMethod: 'cod',
-					name: paymentInfo.name,
-					phone: paymentInfo.phone,
-				},
-				{
-					requestId:
-						typeof crypto !== 'undefined' &&
-						typeof crypto.randomUUID === 'function'
-							? crypto.randomUUID()
-							: 'req-' + Date.now(),
-				},
-			);
-			clearCart();
-			router.push('/order/confirm/' + orderId);
+			const orderId = await createOrder({
+				buyerName: paymentInfo.name,
+				buyerPhone: paymentInfo.phone,
+				notes: paymentInfo.notes || undefined,
+			});
+			if (orderId) {
+				clearCart();
+				router.push('/order/confirm/' + orderId);
+			}
 		} finally {
 			isSubmittingRef.current = false;
 			setIsSubmitting(false);
