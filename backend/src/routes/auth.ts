@@ -1,6 +1,6 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
 import { registerSchema, loginSchema } from '../validators/auth.js';
-import { register, login, refreshAccessToken, EmailAlreadyExistsError, InvalidCredentialsError, AccountNotVerifiedError } from '../services/authService.js';
+import { register, login, refreshAccessToken, EmailAlreadyExistsError, InvalidCredentialsError, AccountNotVerifiedError, InvalidRefreshTokenError } from '../services/authService.js';
 
 export const authRouter = Router();
 
@@ -65,7 +65,11 @@ authRouter.post('/refresh', async (req: Request, res: Response, next: NextFuncti
 
     const tokens = await refreshAccessToken(refreshToken);
     res.json(tokens);
-  } catch {
-    res.status(401).json({ error: 'Refresh token tidak valid atau telah kedaluwarsa', code: 'INVALID_REFRESH_TOKEN' });
+  } catch (err) {
+    if (err instanceof InvalidRefreshTokenError) {
+      res.status(401).json({ error: err.message, code: 'INVALID_REFRESH_TOKEN' });
+      return;
+    }
+    next(err);
   }
 });

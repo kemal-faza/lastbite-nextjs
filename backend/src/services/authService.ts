@@ -115,12 +115,24 @@ export async function login(input: {
   };
 }
 
+export class InvalidRefreshTokenError extends Error {
+  constructor() {
+    super('Refresh token tidak valid');
+    this.name = 'InvalidRefreshTokenError';
+  }
+}
+
 export async function refreshAccessToken(token: string): Promise<AuthTokens> {
-  const payload = verifyRefreshToken(token);
+  let payload: { userId: string };
+  try {
+    payload = verifyRefreshToken(token);
+  } catch {
+    throw new InvalidRefreshTokenError();
+  }
 
   const user = await prisma.user.findUnique({ where: { id: payload.userId } });
   if (!user || user.refreshToken !== token) {
-    throw new Error('Refresh token tidak valid');
+    throw new InvalidRefreshTokenError();
   }
 
   const accessToken = signAccessToken({ userId: user.id, email: user.email });
