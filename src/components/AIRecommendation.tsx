@@ -2,6 +2,7 @@
 
 import { Sparkles, Info } from 'lucide-react';
 import { products, type Product } from '@/lib/data/products';
+import type { ProductData } from '@/lib/api/products';
 import { useRouter } from 'next/navigation';
 import { useState, useMemo } from 'react';
 
