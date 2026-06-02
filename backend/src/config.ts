@@ -9,4 +9,4 @@ export const config = {
   otpExpiryMinutes: 5,
   otpLength: 6,
   bcryptSaltRounds: 12,
-};
+} as const;

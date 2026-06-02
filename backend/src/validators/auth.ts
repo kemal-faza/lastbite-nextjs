@@ -6,3 +6,8 @@ export const registerSchema = z.object({
   phone: z.string().min(10, 'Nomor telepon minimal 10 digit').max(15, 'Nomor telepon maksimal 15 digit').optional(),
   password: z.string().min(8, 'Password minimal 8 karakter').max(128, 'Password maksimal 128 karakter'),
 });
+
+export const loginSchema = z.object({
+  email: z.string().email('Format email tidak valid'),
+  password: z.string().min(1, 'Password wajib diisi'),
+});

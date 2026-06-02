@@ -1,8 +1,9 @@
 import { prisma } from '../lib/prisma.js';
-import { hashPassword } from '../lib/password.js';
+import { hashPassword, verifyPassword } from '../lib/password.js';
 import { getOtpSender } from '../lib/otpSender.js';
+import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../lib/jwt.js';
 import { config } from '../config.js';
-import type { UserResponse } from '../types/index.js';
+import type { UserResponse, AuthTokens, LoginResponse } from '../types/index.js';
 
 function generateOtpCode(): string {
   const min = Math.pow(10, config.otpLength - 1);
@@ -66,4 +67,69 @@ export async function register(input: {
   await getOtpSender().sendOtp(user.email, verificationCode);
 
   return { user: toUserResponse(user) };
+}
+
+export class InvalidCredentialsError extends Error {
+  constructor() {
+    super('Email atau password salah');
+    this.name = 'InvalidCredentialsError';
+  }
+}
+
+export class AccountNotVerifiedError extends Error {
+  constructor() {
+    super('Akun belum diverifikasi. Silakan verifikasi OTP terlebih dahulu.');
+    this.name = 'AccountNotVerifiedError';
+  }
+}
+
+export async function login(input: {
+  email: string;
+  password: string;
+}): Promise<LoginResponse> {
+  const user = await prisma.user.findUnique({ where: { email: input.email } });
+  if (!user) {
+    throw new InvalidCredentialsError();
+  }
+
+  const passwordValid = await verifyPassword(input.password, user.passwordHash);
+  if (!passwordValid) {
+    throw new InvalidCredentialsError();
+  }
+
+  if (!user.isVerified) {
+    throw new AccountNotVerifiedError();
+  }
+
+  const accessToken = signAccessToken({ userId: user.id, email: user.email });
+  const refreshToken = signRefreshToken({ userId: user.id });
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { refreshToken },
+  });
+
+  return {
+    tokens: { accessToken, refreshToken },
+    user: toUserResponse(user),
+  };
+}
+
+export async function refreshAccessToken(token: string): Promise<AuthTokens> {
+  const payload = verifyRefreshToken(token);
+
+  const user = await prisma.user.findUnique({ where: { id: payload.userId } });
+  if (!user || user.refreshToken !== token) {
+    throw new Error('Refresh token tidak valid');
+  }
+
+  const accessToken = signAccessToken({ userId: user.id, email: user.email });
+  const refreshToken = signRefreshToken({ userId: user.id });
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { refreshToken },
+  });
+
+  return { accessToken, refreshToken };
 }
