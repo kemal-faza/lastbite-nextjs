@@ -38,12 +38,14 @@ export default function RegisterPage() {
     resolver: zodResolver(registerFormSchema),
   });
 
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
   const onSubmit = async (data: RegisterFormData) => {
     setIsSubmitting(true);
     setServerError('');
 
     try {
-      const res = await fetch('http://localhost:4000/auth/register', {
+      const res = await fetch(`${API_BASE}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

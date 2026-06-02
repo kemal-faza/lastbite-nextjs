@@ -5,7 +5,9 @@ import { config } from '../config.js';
 import type { UserResponse } from '../types/index.js';
 
 function generateOtpCode(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  const min = Math.pow(10, config.otpLength - 1);
+  const max = Math.pow(10, config.otpLength) - 1;
+  return (Math.floor(Math.random() * (max - min + 1)) + min).toString();
 }
 
 function toUserResponse(user: {
