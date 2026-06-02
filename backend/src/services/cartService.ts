@@ -89,54 +89,79 @@ export async function addToCart(
   productId: string,
   quantity = 1
 ): Promise<CartWithItems> {
-  // Get product with validation
-  const product = await prisma.product.findUnique({ where: { id: productId } });
-  if (!product || !product.isActive) {
-    throw new ProductNotFoundError();
-  }
+  return prisma.$transaction(async (tx) => {
+    const product = await tx.product.findUnique({ where: { id: productId } });
+    if (!product || !product.isActive) {
+      throw new ProductNotFoundError();
+    }
 
-  // Get or create cart
-  const cart = await getCartOrCreate(userId);
-
-  // Enforce single-store constraint
-  if (cart.storeName && cart.storeName !== product.storeName) {
-    throw new DifferentStoreError(cart.storeName, product.storeName);
-  }
-
-  // Check stock - existing quantity + new quantity
-  const existingItem = cart.items.find((i) => i.productId === productId);
-  const currentQty = existingItem?.quantity ?? 0;
-  const newTotalQty = currentQty + quantity;
-
-  if (newTotalQty > product.stock) {
-    throw new InsufficientStockError(product.name, product.stock);
-  }
-
-  // Upsert cart item
-  await prisma.cartItem.upsert({
-    where: {
-      cartId_productId: { cartId: cart.id, productId },
-    },
-    create: {
-      cartId: cart.id,
-      productId,
-      quantity,
-    },
-    update: {
-      quantity: newTotalQty,
-    },
-  });
-
-  // Update storeName on cart if not set
-  if (!cart.storeName) {
-    await prisma.cart.update({
-      where: { id: cart.id },
-      data: { storeName: product.storeName },
+    // Get or create cart inside transaction
+    let cart = await tx.cart.findUnique({
+      where: { userId },
+      include: { items: true },
     });
-  }
+    if (!cart) {
+      cart = await tx.cart.create({
+        data: { userId },
+        include: { items: true },
+      });
+    }
 
-  // Return updated cart
-  return getCartOrCreate(userId);
+    // Single-store constraint
+    if (cart.storeName && product.storeName !== cart.storeName) {
+      throw new DifferentStoreError(cart.storeName, product.storeName);
+    }
+
+    // Stock check
+    const existingItem = cart.items.find((i) => i.productId === productId);
+    const currentQty = existingItem ? existingItem.quantity : 0;
+    const newQty = currentQty + quantity;
+
+    if (newQty > product.stock) {
+      throw new InsufficientStockError(product.name, product.stock);
+    }
+
+    // Upsert inside transaction
+    await tx.cartItem.upsert({
+      where: {
+        cartId_productId: { cartId: cart.id, productId },
+      },
+      create: { cartId: cart.id, productId, quantity },
+      update: { quantity: newQty },
+    });
+
+    if (!cart.storeName) {
+      await tx.cart.update({
+        where: { id: cart.id },
+        data: { storeName: product.storeName },
+      });
+    }
+
+    // Return fresh cart with items
+    const updatedCart = await tx.cart.findUnique({
+      where: { id: cart.id },
+      include: {
+        items: {
+          include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+                discountedPrice: true,
+                originalPrice: true,
+                stock: true,
+                imageUrl: true,
+                storeName: true,
+                isActive: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return updatedCart as CartWithItems;
+  });
 }
 
 export async function updateCartItemQuantity(
@@ -149,27 +174,73 @@ export async function updateCartItemQuantity(
     return removeFromCart(userId, productId);
   }
 
-  const cart = await getCartOrCreate(userId);
+  return prisma.$transaction(async (tx) => {
+    const product = await tx.product.findUnique({ where: { id: productId } });
+    if (!product) {
+      throw new ProductNotFoundError();
+    }
 
-  const product = await prisma.product.findUnique({ where: { id: productId } });
-  if (!product) {
-    throw new ProductNotFoundError();
-  }
+    // Check stock
+    if (quantity > product.stock) {
+      throw new InsufficientStockError(product.name, product.stock);
+    }
 
-  // Check stock
-  if (quantity > product.stock) {
-    throw new InsufficientStockError(product.name, product.stock);
-  }
+    // Find cart
+    let cart = await tx.cart.findUnique({
+      where: { userId },
+      include: { items: true },
+    });
+    if (!cart) {
+      cart = await tx.cart.create({
+        data: { userId },
+        include: { items: true },
+      });
+    }
 
-  // Update quantity
-  await prisma.cartItem.update({
-    where: {
-      cartId_productId: { cartId: cart.id, productId },
-    },
-    data: { quantity },
+    // Fetch existing cartItem
+    const existingItem = await tx.cartItem.findUnique({
+      where: {
+        cartId_productId: { cartId: cart.id, productId },
+      },
+    });
+
+    if (!existingItem) {
+      throw new CartError('Item tidak ditemukan di keranjang', 'ITEM_NOT_FOUND');
+    }
+
+    // Update quantity
+    await tx.cartItem.update({
+      where: {
+        cartId_productId: { cartId: cart.id, productId },
+      },
+      data: { quantity },
+    });
+
+    // Return fresh cart with items
+    const updatedCart = await tx.cart.findUnique({
+      where: { id: cart.id },
+      include: {
+        items: {
+          include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+                discountedPrice: true,
+                originalPrice: true,
+                stock: true,
+                imageUrl: true,
+                storeName: true,
+                isActive: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return updatedCart as CartWithItems;
   });
-
-  return getCartOrCreate(userId);
 }
 
 export async function removeFromCart(

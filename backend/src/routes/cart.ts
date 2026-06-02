@@ -1,4 +1,5 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
+import { z } from 'zod';
 import { requireAuth } from '../middleware/auth.js';
 import {
   getCart,
@@ -67,7 +68,15 @@ cartRouter.patch('/items/:productId', async (req: Request, res: Response, next: 
       return;
     }
 
-    const productId = req.params.productId as string;
+    const paramParsed = z.string().uuid().safeParse(req.params.productId);
+    if (!paramParsed.success) {
+      res.status(400).json({
+        error: 'ID produk tidak valid',
+        code: 'VALIDATION_ERROR',
+      });
+      return;
+    }
+    const productId = paramParsed.data;
 
     let cart;
     if (parsed.data.quantity === 0) {
@@ -93,7 +102,15 @@ cartRouter.patch('/items/:productId', async (req: Request, res: Response, next: 
 // DELETE /cart/items/:productId - remove item from cart
 cartRouter.delete('/items/:productId', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const productId = req.params.productId as string;
+    const paramParsed = z.string().uuid().safeParse(req.params.productId);
+    if (!paramParsed.success) {
+      res.status(400).json({
+        error: 'ID produk tidak valid',
+        code: 'VALIDATION_ERROR',
+      });
+      return;
+    }
+    const productId = paramParsed.data;
     const cart = await removeFromCart(req.user!.userId, productId);
     res.json({ cart });
   } catch (err) {
