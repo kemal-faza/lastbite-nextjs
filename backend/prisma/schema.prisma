@@ -16,6 +16,7 @@ enum Category {
 enum UserRole {
   FOOD_SAVER
   MITRA
+  ADMIN
 }
 
 model User {

@@ -49,9 +49,9 @@ function getDefaultProducts(mitraId: string) {
       stock: 5,
       imageUrl: "/images/products/ayam-preksu.jpg",
       storeName: "Dapur Bu Ani",
-      storeAddress: "Jl. Merdeka No. 12, Bandung",
-      storeLat: -6.914744,
-      storeLng: 107.60981,
+      storeAddress: "Jl. Pandanaran No. 12, Semarang",
+      storeLat: -6.9875,
+      storeLng: 110.4216,
       expiresAt: expiresInHours(4),
       mitraId,
     },
@@ -65,9 +65,9 @@ function getDefaultProducts(mitraId: string) {
       stock: 3,
       imageUrl: "/images/products/nasi-padang.jpg",
       storeName: "RM Padang Suharti",
-      storeAddress: "Jl. Diponegoro No. 45, Bandung",
-      storeLat: -6.902425,
-      storeLng: 107.618756,
+      storeAddress: "Jl. Gajah Mada No. 45, Semarang",
+      storeLat: -6.9694,
+      storeLng: 110.4272,
       expiresAt: expiresInHours(3),
       mitraId,
     },
@@ -81,9 +81,9 @@ function getDefaultProducts(mitraId: string) {
       stock: 8,
       imageUrl: "/images/products/roti-coklat.jpg",
       storeName: "Bakeria",
-      storeAddress: "Jl. Braga No. 78, Bandung",
-      storeLat: -6.916105,
-      storeLng: 107.609536,
+      storeAddress: "Jl. Pahlawan No. 78, Semarang",
+      storeLat: -6.9838,
+      storeLng: 110.4163,
       expiresAt: expiresInHours(5),
       mitraId,
     },
@@ -97,9 +97,9 @@ function getDefaultProducts(mitraId: string) {
       stock: 10,
       imageUrl: "/images/products/kopi-susu.jpg",
       storeName: "Warung Kopi Aroma",
-      storeAddress: "Jl. Riau No. 23, Bandung",
-      storeLat: -6.891542,
-      storeLng: 107.610532,
+      storeAddress: "Jl. Simpang Lima No. 23, Semarang",
+      storeLat: -6.9867,
+      storeLng: 110.4223,
       expiresAt: expiresInHours(2),
       mitraId,
     },
@@ -113,9 +113,9 @@ function getDefaultProducts(mitraId: string) {
       stock: 6,
       imageUrl: "/images/products/nasgor-kampung.jpg",
       storeName: "Dapur Bu Ani",
-      storeAddress: "Jl. Merdeka No. 12, Bandung",
-      storeLat: -6.914744,
-      storeLng: 107.60981,
+      storeAddress: "Jl. Pandanaran No. 12, Semarang",
+      storeLat: -6.9875,
+      storeLng: 110.4216,
       expiresAt: expiresInHours(3),
       mitraId,
     },
@@ -129,9 +129,9 @@ function getDefaultProducts(mitraId: string) {
       stock: 7,
       imageUrl: "/images/products/roti-keju.jpg",
       storeName: "Bakeria",
-      storeAddress: "Jl. Braga No. 78, Bandung",
-      storeLat: -6.916105,
-      storeLng: 107.609536,
+      storeAddress: "Jl. Pahlawan No. 78, Semarang",
+      storeLat: -6.9838,
+      storeLng: 110.4163,
       expiresAt: expiresInHours(4),
       mitraId,
     },
@@ -145,9 +145,9 @@ function getDefaultProducts(mitraId: string) {
       stock: 12,
       imageUrl: "/images/products/es-teh-tarik.jpg",
       storeName: "Warung Kopi Aroma",
-      storeAddress: "Jl. Riau No. 23, Bandung",
-      storeLat: -6.891542,
-      storeLng: 107.610532,
+      storeAddress: "Jl. Simpang Lima No. 23, Semarang",
+      storeLat: -6.9867,
+      storeLng: 110.4223,
       expiresAt: expiresInHours(2),
       mitraId,
     },
@@ -161,9 +161,9 @@ function getDefaultProducts(mitraId: string) {
       stock: 4,
       imageUrl: "/images/products/mie-ayam.jpg",
       storeName: "Mie Ayam Mang Udin",
-      storeAddress: "Jl. Cihampelas No. 56, Bandung",
-      storeLat: -6.893789,
-      storeLng: 107.605432,
+      storeAddress: "Jl. Veteran No. 56, Semarang",
+      storeLat: -6.9802,
+      storeLng: 110.4195,
       expiresAt: expiresInHours(3),
       mitraId,
     },
@@ -184,9 +184,33 @@ async function seedProducts(mitraId: string) {
   console.log(`\nSeeded ${products.length} products successfully!`);
 }
 
+const ADMIN_EMAIL = "admin@lastbite.id";
+
+async function seedAdminUser(): Promise<void> {
+  const existing = await prisma.user.findUnique({ where: { email: ADMIN_EMAIL } });
+  if (existing) {
+    console.log(`ADMIN user already exists: ${ADMIN_EMAIL}`);
+    return;
+  }
+
+  const passwordHash = await bcrypt.hash("admin123", SALT_ROUNDS);
+  await prisma.user.create({
+    data: {
+      email: ADMIN_EMAIL,
+      name: "Admin LastBite",
+      phone: "080000000000",
+      role: "ADMIN",
+      passwordHash,
+      isVerified: true,
+    },
+  });
+  console.log(`Created ADMIN user: ${ADMIN_EMAIL} (password: admin123)`);
+}
+
 async function main() {
   console.log("Seeding database...");
 
+  await seedAdminUser();
   const mitra = await ensureMitraUser();
   await seedProducts(mitra.id);
 

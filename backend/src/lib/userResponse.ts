@@ -5,6 +5,7 @@ export function toUserResponse(user: {
   email: string;
   name: string;
   phone: string | null;
+  role: string;
   isVerified: boolean;
   createdAt: Date;
 }): UserResponse {
@@ -13,6 +14,7 @@ export function toUserResponse(user: {
     email: user.email,
     name: user.name,
     phone: user.phone,
+    role: user.role,
     isVerified: user.isVerified,
     createdAt: user.createdAt.toISOString(),
   };

@@ -48,3 +48,23 @@ export function requireMitra(req: Request, res: Response, next: NextFunction): v
       });
   });
 }
+
+export function requireAdmin(req: Request, res: Response, next: NextFunction): void {
+  requireAuth(req, res, () => {
+    prisma.user
+      .findUnique({
+        where: { id: req.user!.userId },
+        select: { role: true },
+      })
+      .then((user) => {
+        if (!user || user.role !== 'ADMIN') {
+          res.status(403).json({ error: 'Akses hanya untuk Admin.', code: 'FORBIDDEN' });
+          return;
+        }
+        next();
+      })
+      .catch(() => {
+        res.status(500).json({ error: 'Gagal memverifikasi akses', code: 'INTERNAL_ERROR' });
+      });
+  });
+}

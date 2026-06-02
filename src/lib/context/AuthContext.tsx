@@ -8,6 +8,7 @@ interface User {
   email: string;
   name: string;
   phone: string | null;
+  role: string;
   isVerified: boolean;
   createdAt: string;
 }
