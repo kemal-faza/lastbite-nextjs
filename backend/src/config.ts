@@ -10,6 +10,8 @@ export const config = {
   otpLength: 6,
   bcryptSaltRounds: 12,
   corsOrigins: (process.env.CORS_ORIGINS || 'http://localhost:3000').split(','),
+  FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID || 'test-project',
+  FIREBASE_SERVICE_ACCOUNT: process.env.FIREBASE_SERVICE_ACCOUNT || '',
   upload: {
     provider: (process.env.UPLOAD_PROVIDER || 'local') as 'local' | 's3',
     localDir: process.env.UPLOAD_LOCAL_DIR || 'uploads',
