@@ -4,6 +4,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { ChevronLeft, Check, Clock, MapPin, Navigation, ShoppingBag } from 'lucide-react';
 import { motion } from 'motion/react';
 import { QueueIndicator } from '@/components/QueueIndicator';
+import { WriteReviewModal } from '@/components/WriteReviewModal';
+import { createReview as apiCreateReview } from '@/lib/api/reviews';
 import { useOrders } from '@/lib/context/OrderContext';
 import { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
@@ -15,6 +17,7 @@ export default function ConfirmationPage() {
 	const [pickupCodeInput, setPickupCodeInput] = useState('');
 	const [pickupError, setPickupError] = useState('');
 	const [showSuccessScreen, setShowSuccessScreen] = useState(false);
+	const [showReviewModal, setShowReviewModal] = useState(false);
 	const [timeLeft, setTimeLeft] = useState(30 * 60);
 
 	useEffect(() => {
@@ -146,6 +149,11 @@ export default function ConfirmationPage() {
 							className="w-full border-2 border-[var(--primary)] text-[var(--primary)] font-semibold py-3.5 rounded-2xl hover:bg-[var(--primary)]/5 active:scale-[0.98] transition-all">
 							Lihat Riwayat Pesanan
 						</button>
+						<button
+							onClick={() => setShowReviewModal(true)}
+							className="w-full bg-[var(--secondary)] text-white font-semibold py-3.5 rounded-2xl hover:bg-[var(--secondary)]/90 active:scale-[0.98] transition-all">
+							Tulis Ulasan
+						</button>
 					</div>
 				</div>
 			</div>
@@ -167,7 +175,7 @@ export default function ConfirmationPage() {
 	};
 
 	return (
-		<div className="flex flex-col h-full w-full">
+		<><div className="flex flex-col h-full w-full">
 			{/* Header */}
 			<header className="bg-[var(--primary)] text-white px-4 py-3 flex items-center gap-3 shrink-0">
 				<button
@@ -313,5 +321,16 @@ export default function ConfirmationPage() {
 				</div>
 			</div>
 		</div>
+			<WriteReviewModal
+				isOpen={showReviewModal}
+				onClose={() => setShowReviewModal(false)}
+				orderId={(id as string) || ''}
+				productName={order.items[0]?.name || 'Produk'}
+				onSubmit={async (orderId, input) => {
+					await apiCreateReview(orderId, input);
+					setShowReviewModal(false);
+				}}
+			/>
+		</>
 	);
 }
