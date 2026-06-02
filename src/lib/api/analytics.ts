@@ -1,4 +1,4 @@
-import { apiFetch } from './client';
+import { apiFetch, API_BASE } from './client';
 
 export interface SalesTrendEntry {
   date: string;
@@ -61,4 +61,11 @@ export interface PeakHourEntry {
 export async function fetchPeakHours(params: AnalyticsQueryParams): Promise<{ hours: PeakHourEntry[] }> {
   const query = new URLSearchParams({ from: params.from, to: params.to });
   return apiFetch<{ hours: PeakHourEntry[] }>(`/mitra/analytics/peak-hours?${query}`, { auth: true });
+}
+
+export function getExportCsvUrl(from: string, to: string): string {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : '';
+  const query = new URLSearchParams({ from, to });
+  if (token) query.set('token', token);
+  return `${API_BASE}/mitra/analytics/export?${query}`;
 }

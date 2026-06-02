@@ -263,3 +263,64 @@ export async function getPeakHours(
 
   return Array.from(hourMap.values());
 }
+
+export async function generateAnalyticsCsv(
+  mitraId: string,
+  from: Date,
+  to: Date
+): Promise<string> {
+  const products = await prisma.product.findMany({
+    where: { mitraId },
+    select: { id: true, name: true },
+  });
+  const productIds = products.map((p) => p.id);
+
+  const orderItems = await prisma.orderItem.findMany({
+    where: {
+      productId: { in: productIds },
+      order: {
+        status: { in: ['PICKED_UP', 'READY'] },
+        createdAt: { gte: from, lte: to },
+      },
+    },
+    select: {
+      productId: true,
+      name: true,
+      price: true,
+      quantity: true,
+      order: {
+        select: {
+          createdAt: true,
+          totalAmount: true,
+          savingAmount: true,
+          buyerName: true,
+          status: true,
+        },
+      },
+    },
+    orderBy: { order: { createdAt: 'desc' } },
+  });
+
+  const headers = ['Tanggal', 'Produk', 'Jumlah', 'Harga Satuan', 'Pendapatan', 'Hemat Pembeli', 'Pembeli', 'Status'];
+
+  const escapeCsv = (value: string | number): string => {
+    const str = String(value);
+    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+  };
+
+  const rows = orderItems.map((item) => [
+    escapeCsv(item.order.createdAt.toISOString()),
+    escapeCsv(item.name),
+    item.quantity,
+    item.price,
+    item.price * item.quantity,
+    item.order.savingAmount,
+    escapeCsv(item.order.buyerName),
+    item.order.status,
+  ]);
+
+  return [headers.join(','), ...rows.map((row) => row.join(','))].join('\n');
+}
