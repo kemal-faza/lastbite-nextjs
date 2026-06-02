@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { ProductCard } from './ProductCard';
 import { products } from '@/lib/data/products';
+import { type ProductData } from '@/lib/api/products';
 import type { SortOption } from './FilterBar';
 import type { FilterValues } from './FilterModal';
 
@@ -23,6 +24,28 @@ function parseExpiry(e: string): number {
 	if (e.includes('menit') || e.includes('min')) return num;
 	if (e.includes('jam')) return num * 60;
 	return 999;
+}
+
+function toProductData(p: typeof products[number]): ProductData {
+  return {
+    id: String(p.id),
+    name: p.name,
+    description: null,
+    category: p.category,
+    originalPrice: p.originalPrice,
+    discountedPrice: p.discountedPrice,
+    discountPercent: p.discount,
+    stock: p.remaining,
+    imageUrl: p.image,
+    storeName: p.store,
+    storeAddress: null,
+    storeLat: null,
+    storeLng: null,
+    expiresAt: new Date(Date.now() + parseInt(p.expiresIn) * 3600000).toISOString(),
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
 }
 
 export function ProductGrid({
@@ -89,6 +112,8 @@ export function ProductGrid({
 		return result;
 	}, [selectedCategory, searchQuery, sortBy, filters]);
 
+	const productDataList = useMemo(() => filteredProducts.map(toProductData), [filteredProducts]);
+
 	return (
 		<div>
 			<div className="flex items-center justify-between mb-3">
@@ -98,7 +123,7 @@ export function ProductGrid({
 			</div>
 
 			<div className="grid grid-cols-1 gap-4 pb-12">
-				{filteredProducts.map((product) => (
+				{productDataList.map((product) => (
 					<ProductCard
 						key={product.id}
 						product={product}

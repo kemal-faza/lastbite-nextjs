@@ -3,7 +3,30 @@
 import { useState, useMemo } from 'react';
 import { Search as SearchIcon, Clock, TrendingUp, X } from 'lucide-react';
 import { products } from '@/lib/data/products';
+import { type ProductData } from '@/lib/api/products';
 import { ProductCard } from '@/components/ProductCard';
+
+function toProductData(p: typeof products[number]): ProductData {
+  return {
+    id: String(p.id),
+    name: p.name,
+    description: null,
+    category: p.category,
+    originalPrice: p.originalPrice,
+    discountedPrice: p.discountedPrice,
+    discountPercent: p.discount,
+    stock: p.remaining,
+    imageUrl: p.image,
+    storeName: p.store,
+    storeAddress: null,
+    storeLat: null,
+    storeLng: null,
+    expiresAt: new Date(Date.now() + parseInt(p.expiresIn) * 3600000).toISOString(),
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+}
 
 const RECENT_SEARCHES = ['Roti Gandum', 'Salad', 'Kopi', 'Croissant'];
 const TRENDING_SEARCHES = [
@@ -43,7 +66,7 @@ export default function SearchPage() {
 	};
 
 	return (
-		<div className="flex flex-col bg-white h-full">
+		<div className="flex flex-col bg-white h-screen">
 			{/* Search Bar */}
 			<div className="sticky top-0 z-10 bg-white pb-3 px-4 pt-3 border-b border-gray-100">
 				<div className="relative">
@@ -135,14 +158,15 @@ export default function SearchPage() {
 					<div>
 						<div className="flex items-center justify-between mb-3">
 							<h2 className="text-sm font-semibold text-gray-900">
-								{searchResults.length} hasil untuk &quot;{query}&quot;
+								{searchResults.length} hasil untuk &quot;{query}
+								&quot;
 							</h2>
 						</div>
 						<div className="grid grid-cols-1 gap-4">
 							{searchResults.map((product) => (
 								<ProductCard
 									key={product.id}
-									product={product}
+									product={toProductData(product)}
 								/>
 							))}
 						</div>

@@ -3,29 +3,43 @@
 import { Clock, MapPin, ShoppingBag, Heart, ShieldCheck } from 'lucide-react';
 import { useState, useCallback } from 'react';
 import { motion } from 'motion/react';
-import { type Product } from '@/lib/data/products';
+import { type ProductData } from '@/lib/api/products';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/lib/context/CartContext';
 import { useWishlist } from '@/lib/context/WishlistContext';
+import { ImageWithFallback } from '@/components/ImageWithFallback';
 
 interface ProductCardProps {
-  product: Product;
+  product: ProductData;
+}
+
+function formatExpiry(expiresAt: string): string {
+  const diff = new Date(expiresAt).getTime() - Date.now();
+  if (diff <= 0) return 'Kadaluwarsa';
+  const hours = Math.max(0, Math.floor(diff / (1000 * 60 * 60)));
+  const minutes = Math.max(0, Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)));
+  if (hours === 0) return `${minutes} menit`;
+  return `${hours} jam ${minutes} menit`;
+}
+
+function toNumericId(id: string): number {
+  return Number(id.replace(/-/g, '').slice(0, 9)) || 0;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
   const [isAdded, setIsAdded] = useState(false);
-  const [imgError, setImgError] = useState(false);
   const router = useRouter();
   const { items: cartItems, addItem, clearCart } = useCart();
   const { toggle, isWishlisted } = useWishlist();
-  const isFav = isWishlisted(product.id);
+  const numericId = toNumericId(product.id);
+  const isFav = isWishlisted(numericId);
 
   const handleAddToCart = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
 
-    if (cartItems.length > 0 && cartItems[0].store !== product.store) {
+    if (cartItems.length > 0 && cartItems[0].store !== product.storeName) {
       const confirmed = window.confirm(
-        'Keranjangmu berisi item dari ' + cartItems[0].store + '. Hapus dan ganti dengan item dari ' + product.store + '?'
+        'Keranjangmu berisi item dari ' + cartItems[0].store + '. Hapus dan ganti dengan item dari ' + product.storeName + '?'
       );
       if (!confirmed) return;
       clearCart();
@@ -33,17 +47,19 @@ export function ProductCard({ product }: ProductCardProps) {
 
     setIsAdded(true);
     addItem({
-      id: product.id,
+      id: numericId,
       name: product.name,
-      store: product.store,
+      store: product.storeName,
       price: product.discountedPrice,
       originalPrice: product.originalPrice,
-      image: product.image,
+      image: product.imageUrl || '',
     });
     setTimeout(() => {
       setIsAdded(false);
     }, 2000);
-  }, [product, addItem, cartItems, clearCart]);
+  }, [product, numericId, addItem, cartItems, clearCart]);
+
+  const expiryText = formatExpiry(product.expiresAt);
 
   return (
     <motion.div
@@ -53,26 +69,13 @@ export function ProductCard({ product }: ProductCardProps) {
       className="bg-white rounded-2xl shadow-md border border-gray-100 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2"
     >
       <div className="relative overflow-hidden rounded-t-2xl bg-gray-100">
-        {imgError ? (
-          <div className="w-full h-48 flex items-center justify-center bg-gray-100">
-            <div className="flex flex-col items-center gap-2">
-              <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-                <ShoppingBag className="w-6 h-6 text-gray-400" />
-              </div>
-              <span className="text-xs text-gray-400">{product.name}</span>
-            </div>
-          </div>
-        ) : (
-          <img
-            src={product.image}
-            alt={product.name}
-            className="w-full h-48 object-cover"
-            onError={() => setImgError(true)}
-            loading="lazy"
-          />
-        )}
+        <ImageWithFallback
+          src={product.imageUrl}
+          alt={product.name}
+          className="w-full h-48 object-cover"
+        />
         <button
-          onClick={(e) => { e.stopPropagation(); toggle(product.id); }}
+          onClick={(e) => { e.stopPropagation(); toggle(numericId); }}
           className="absolute bottom-3 left-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:bg-white transition-all z-10"
           aria-label={isFav ? 'Hapus dari favorit' : 'Tambah ke favorit'}
         >
@@ -81,7 +84,7 @@ export function ProductCard({ product }: ProductCardProps) {
           />
         </button>
         <div className="absolute top-3 right-3 bg-[var(--destructive)] text-white px-3 py-1 rounded-full font-bold text-sm shadow-lg">
-          -{product.discount}%
+          -{product.discountPercent}%
         </div>
         <div className="absolute top-3 left-12 bg-green-600/90 backdrop-blur-sm px-2.5 py-1 rounded-full flex items-center gap-1 shadow-lg">
           <ShieldCheck className="w-3 h-3 text-white" />
@@ -89,7 +92,7 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
         <div className="absolute top-12 left-3 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1 shadow-lg">
           <Clock className="w-3 h-3 text-[var(--secondary)]" />
-          <span className="text-xs font-medium text-[var(--secondary)]">{product.expiresIn}</span>
+          <span className="text-xs font-medium text-[var(--secondary)]">{expiryText}</span>
         </div>
       </div>
 
@@ -98,13 +101,11 @@ export function ProductCard({ product }: ProductCardProps) {
 
         <div className="flex items-center gap-1 text-gray-600 text-sm mb-1">
           <MapPin className="w-3 h-3" />
-          <span>{product.store}</span>
-          <span className="text-gray-400 mx-1">·</span>
-          <span className="text-gray-500">{product.distance}</span>
+          <span>{product.storeName}</span>
         </div>
 
         <p className="text-xs text-[var(--destructive)] mb-3">
-          Sisa {product.remaining} porsi
+          Sisa {product.stock} porsi
         </p>
 
         <div className="flex items-center justify-between">
@@ -119,7 +120,7 @@ export function ProductCard({ product }: ProductCardProps) {
             </span>
           </div>
 
-          {product.remaining === 0 ? (
+          {product.stock === 0 ? (
             <button
               disabled
               className="min-w-[88px] px-4 py-2 rounded-xl font-medium bg-gray-200 text-gray-400 cursor-not-allowed flex items-center justify-center gap-2"
@@ -132,7 +133,7 @@ export function ProductCard({ product }: ProductCardProps) {
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={handleAddToCart}
-              disabled={product.remaining <= 0}
+              disabled={product.stock <= 0}
               aria-label={isAdded ? 'Ditambahkan ' + product.name + ' ke keranjang' : 'Beli ' + product.name}
               className={
                 'min-w-[88px] px-4 py-2 rounded-xl font-medium transition-colors flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-1 ' +

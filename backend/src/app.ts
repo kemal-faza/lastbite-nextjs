@@ -3,6 +3,7 @@ import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import { authRouter } from './routes/auth.js';
 import { usersRouter } from './routes/users.js';
+import { productsRouter } from './routes/products.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { config } from './config.js';
 
@@ -29,6 +30,7 @@ export function createApp() {
 
   app.use('/auth', authLimiter, authRouter);
   app.use('/users', usersRouter);
+  app.use('/products', productsRouter);
 
   app.use(errorHandler);
 
