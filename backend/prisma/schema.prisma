@@ -219,6 +219,15 @@ model WishlistSubscription {
   @@map("wishlist_subscriptions")
 }
 
+model PlatformConfig {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+  updatedBy String
+
+  @@map("platform_config")
+}
+
 model AuditLog {
   id        String   @id @default(uuid())
   actorId   String

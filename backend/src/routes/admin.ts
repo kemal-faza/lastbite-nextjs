@@ -5,6 +5,7 @@ import { listMitraVerifications, verifyMitra } from '../services/adminMitraServi
 import { verifyMitraSchema, paginationSchema, userUpdateSchema } from '../validators/admin.js';
 import { listUsers, getUserDetail, updateUser } from '../services/adminUserService.js';
 import { listAllProducts, toggleProduct } from '../services/adminProductService.js';
+import { getConfig, updateConfig as updatePlatformConfig } from '../services/platformConfigService.js';
 
 export const adminRouter = Router();
 
@@ -70,6 +71,26 @@ adminRouter.patch('/products/:id', async (req, res) => {
   });
 
   res.json(result);
+});
+
+// ---- Platform Config ----
+
+adminRouter.get('/config', async (_req, res) => {
+  const config = await getConfig();
+  res.json(config);
+});
+
+adminRouter.patch('/config', async (req, res) => {
+  const config = await updatePlatformConfig(req.body, req.user!.userId);
+
+  await createAuditLog({
+    actorId: req.user!.userId,
+    action: 'config.update',
+    entity: 'platform_config',
+    details: req.body,
+  });
+
+  res.json(config);
 });
 
 // ---- Mitra Verification ----
