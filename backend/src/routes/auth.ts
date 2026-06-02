@@ -1,6 +1,6 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
 import { registerSchema, loginSchema, verifyOtpSchema, resendOtpSchema } from '../validators/auth.js';
-import { register, login, refreshAccessToken, verifyOtp, resendOtp, EmailAlreadyExistsError, InvalidCredentialsError, AccountNotVerifiedError, InvalidRefreshTokenError, InvalidOtpError, UserNotFoundError } from '../services/authService.js';
+import { register, login, refreshAccessToken, verifyOtp, resendOtp, EmailAlreadyExistsError, InvalidCredentialsError, AccountNotVerifiedError, InvalidRefreshTokenError, InvalidOtpError, UserNotFoundError, AccountAlreadyVerifiedError } from '../services/authService.js';
 
 export const authRouter = Router();
 
@@ -116,6 +116,10 @@ authRouter.post('/resend-otp', async (req: Request, res: Response, next: NextFun
   } catch (err) {
     if (err instanceof UserNotFoundError) {
       res.status(404).json({ error: err.message, code: 'USER_NOT_FOUND' });
+      return;
+    }
+    if (err instanceof AccountAlreadyVerifiedError) {
+      res.status(400).json({ error: 'Akun Anda sudah terverifikasi. Silakan masuk.', code: 'ALREADY_VERIFIED' });
       return;
     }
     next(err);

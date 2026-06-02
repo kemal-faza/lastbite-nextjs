@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { ChevronLeft, Mail } from 'lucide-react';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+const RESEND_COOLDOWN_SECONDS = 30;
 
 function OtpForm() {
   const router = useRouter();
@@ -95,7 +96,7 @@ function OtpForm() {
       }
 
       setResendMessage('Kode baru telah dikirim!');
-      setResendCooldown(30);
+      setResendCooldown(RESEND_COOLDOWN_SECONDS);
     } catch {
       setError('Tidak dapat terhubung ke server.');
     }

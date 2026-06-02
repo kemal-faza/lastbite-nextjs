@@ -122,6 +122,13 @@ export class InvalidOtpError extends Error {
   }
 }
 
+export class AccountAlreadyVerifiedError extends Error {
+  constructor() {
+    super('Akun sudah terverifikasi');
+    this.name = 'AccountAlreadyVerifiedError';
+  }
+}
+
 export class UserNotFoundError extends Error {
   constructor() {
     super('Pengguna tidak ditemukan');
@@ -173,7 +180,7 @@ export async function resendOtp(input: { email: string }): Promise<void> {
   }
 
   if (user.isVerified) {
-    return;
+    throw new AccountAlreadyVerifiedError();
   }
 
   const verificationCode = generateOtpCode();
