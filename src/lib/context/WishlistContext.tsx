@@ -1,14 +1,29 @@
 'use client';
 
-import { createContext, useContext, useReducer, type ReactNode } from 'react';
+import { createContext, useContext, useReducer, useEffect, type ReactNode } from 'react';
 
 interface WishlistState {
-  ids: number[];
+  ids: string[];
 }
 
 type WishlistAction =
-  | { type: 'TOGGLE'; payload: { id: number } }
+  | { type: 'TOGGLE'; payload: { id: string } }
   | { type: 'CLEAR' };
+
+const STORAGE_KEY = 'lastbite-wishlist';
+
+function loadStored(): WishlistState {
+  if (typeof window === 'undefined') return { ids: [] };
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return { ids: [] };
+    const parsed = JSON.parse(saved);
+    if (Array.isArray(parsed)) return { ids: parsed };
+    return { ids: [] };
+  } catch {
+    return { ids: [] };
+  }
+}
 
 function wishlistReducer(state: WishlistState, action: WishlistAction): WishlistState {
   switch (action.type) {
@@ -28,18 +43,22 @@ function wishlistReducer(state: WishlistState, action: WishlistAction): Wishlist
 }
 
 const WishlistContext = createContext<{
-  ids: number[];
-  toggle: (id: number) => void;
-  isWishlisted: (id: number) => boolean;
+  ids: string[];
+  toggle: (id: string) => void;
+  isWishlisted: (id: string) => boolean;
   count: number;
 } | null>(null);
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(wishlistReducer, { ids: [] });
+  const [state, dispatch] = useReducer(wishlistReducer, { ids: [] }, loadStored);
 
-  const toggle = (id: number) => dispatch({ type: 'TOGGLE', payload: { id } });
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.ids));
+  }, [state.ids]);
 
-  const isWishlisted = (id: number) => state.ids.includes(id);
+  const toggle = (id: string) => dispatch({ type: 'TOGGLE', payload: { id } });
+
+  const isWishlisted = (id: string) => state.ids.includes(id);
 
   return (
     <WishlistContext.Provider

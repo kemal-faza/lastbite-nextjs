@@ -3,15 +3,12 @@
 import { Heart, ShoppingBag, ArrowLeft, Bell } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useWishlist } from '@/lib/context/WishlistContext';
-import { products } from '@/lib/data/products';
+import { fetchWishlistProducts } from '@/lib/api/wishlist';
+import type { ProductData } from '@/lib/api/products';
 import { ProductCard } from '@/components/ProductCard';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-interface WishlistItemProps {
-  product: any;
-}
-
-function WishlistItem({ product }: WishlistItemProps) {
+function WishlistItem({ product }: { product: ProductData }) {
   const [notifActive, setNotifActive] = useState(false);
   return (
     <div className="bg-white rounded-2xl p-2.5 border border-gray-100 flex flex-col gap-2.5 shadow-sm">
@@ -39,8 +36,15 @@ function WishlistItem({ product }: WishlistItemProps) {
 export default function WishlistPage() {
   const { ids, count } = useWishlist();
   const router = useRouter();
+  const [productsData, setProductsData] = useState<ProductData[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const wishlistedProducts = products.filter((p) => ids.includes(p.id));
+  useEffect(() => {
+    setLoading(true);
+    fetchWishlistProducts(ids).then(setProductsData).finally(() => setLoading(false));
+  }, [ids]);
+
+  const wishlistedProducts = productsData;
 
   return (
     <div className="flex flex-col min-h-full bg-[var(--background)]">
