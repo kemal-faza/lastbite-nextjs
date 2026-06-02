@@ -11,6 +11,9 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
+  await prisma.notification.deleteMany();
+  await prisma.wishlistSubscription.deleteMany();
+  await prisma.deviceToken.deleteMany();
   await prisma.mitraProfile.deleteMany();
   await prisma.orderItem.deleteMany();
   await prisma.order.deleteMany();
