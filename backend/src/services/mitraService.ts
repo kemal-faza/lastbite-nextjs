@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 import type { MitraProfileResponse } from '../types/index.js';
+import { geocodeAddress, GeocodingError } from './geocodingService.js';
 
 export class MitraError extends Error {
   constructor(message: string, public code: string) {
@@ -57,7 +58,7 @@ export async function registerMitra(
           storeAddress: input.storeAddress ?? null,
           storeLat: input.storeLat ?? null,
           storeLng: input.storeLng ?? null,
-          verificationStatus: 'VERIFIED', // Auto-verify for M4; admin verification comes in M10
+          verificationStatus: 'PENDING', // Admin verifies in M9
         },
       }),
       prisma.user.update({
@@ -112,4 +113,47 @@ export async function updateMitraProfile(
     }
     throw err;
   }
+}
+
+export async function updateMitraLocation(
+  userId: string,
+  input: {
+    lat?: number;
+    lng?: number;
+    address?: string;
+  }
+): Promise<MitraProfileResponse> {
+  const existing = await prisma.mitraProfile.findUnique({ where: { userId } });
+  if (!existing) {
+    throw new MitraError('Profil mitra tidak ditemukan', 'MITRA_NOT_FOUND');
+  }
+
+  let lat = input.lat ?? existing.storeLat;
+  let lng = input.lng ?? existing.storeLng;
+  let address = input.address ?? existing.storeAddress;
+
+  if (input.address && input.lat === undefined && input.lng === undefined) {
+    try {
+      const geoResult = await geocodeAddress(input.address);
+      lat = geoResult.lat;
+      lng = geoResult.lng;
+      address = geoResult.formattedAddress;
+    } catch (err) {
+      if (err instanceof GeocodingError) {
+        throw new MitraError(err.message, 'GEOCODING_FAILED');
+      }
+      throw err;
+    }
+  }
+
+  const profile = await prisma.mitraProfile.update({
+    where: { userId },
+    data: {
+      storeLat: lat ?? null,
+      storeLng: lng ?? null,
+      storeAddress: address ?? null,
+    },
+  });
+
+  return toMitraProfileResponse(profile);
 }
