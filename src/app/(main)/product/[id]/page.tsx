@@ -19,8 +19,12 @@ import { useCart } from '@/lib/context/CartContext';
 import { useWishlist } from '@/lib/context/WishlistContext';
 import { QueueIndicator } from '@/components/QueueIndicator';
 import { MapModal } from '@/components/MapModal';
-import { useState } from 'react';
+import { ReviewList } from '@/components/ReviewList';
+import { useReviews } from '@/hooks/useReviews';
+import { fetchTrustBadges } from '@/lib/api/reviews';
+import { useState, useEffect } from 'react';
 import { formatExpiry } from '@/lib/utils/date';
+import { formatDistance } from '@/lib/utils/distance';
 
 function LoadingSkeleton() {
 	return (
@@ -79,6 +83,25 @@ export default function DetailProductPage() {
 	const [isMapOpen, setIsMapOpen] = useState(false);
 	const { toggle, isWishlisted } = useWishlist();
 	const isFav = isWishlisted(product?.id || '');
+
+	const {
+		reviews,
+		avgRating,
+		totalReviews,
+		ratingDistribution,
+		loading: reviewsLoading,
+		error: reviewsError,
+		hasMore,
+		loadMore,
+	} = useReviews(product?.id || '');
+
+	const [trustBadges, setTrustBadges] = useState<Array<{ label: string; icon: string }>>([]);
+	useEffect(() => {
+		if (!product?.id) return;
+		fetchTrustBadges(product.id)
+			.then((r) => setTrustBadges(r.badges))
+			.catch(() => {});
+	}, [product?.id]);
 
 	if (loading) {
 		return <LoadingSkeleton />;
@@ -158,17 +181,26 @@ export default function DetailProductPage() {
 
 				{/* Product info */}
 				<div className="px-4 py-4 space-y-4">
-					{/* Hygiene badge + name */}
+					{/* Dynamic trust badges + name */}
 					<div>
 						<div className="flex flex-wrap items-center gap-2 mb-2">
-							<div className="inline-flex items-center gap-1 bg-green-50 text-green-700 border border-green-100 px-3 py-1 rounded-full text-xs font-semibold shadow-sm">
-								<ShieldCheck className="w-3.5 h-3.5" />
-								Mitra Terverifikasi
-							</div>
-							<div className="inline-flex items-center gap-1 bg-[var(--primary)]/10 text-[var(--primary)] px-3 py-1 rounded-full text-xs font-medium">
-								<Check className="w-3 h-3" />
-								Higienis A+
-							</div>
+							{trustBadges.map((badge) => {
+								const iconClass = badge.icon === 'verified'
+									? 'bg-green-50 text-green-700 border-green-100'
+									: badge.icon === 'hygiene'
+									? 'bg-[var(--primary)]/10 text-[var(--primary)]'
+									: badge.icon === 'popular'
+									? 'bg-amber-50 text-amber-700 border-amber-100'
+									: 'bg-gray-50 text-gray-700 border-gray-100';
+								return (
+									<div key={badge.label} className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold shadow-sm border ${iconClass}`}>
+										{badge.icon === 'verified' && <ShieldCheck className="w-3.5 h-3.5" />}
+										{badge.icon === 'hygiene' && <Check className="w-3 h-3" />}
+										{badge.icon === 'popular' && <Star className="w-3 h-3 fill-current" />}
+										{badge.label}
+									</div>
+								);
+							})}
 						</div>
 						<h2 className="text-2xl font-bold text-gray-900 leading-tight">
 							{product.name}
@@ -177,11 +209,19 @@ export default function DetailProductPage() {
 							<span className="font-semibold text-gray-700">
 								{product.storeName}
 							</span>
-							<span>•</span>
+							{product.distanceKm != null && (
+								<>
+									<span>·</span>
+									<span className="text-[var(--primary)] font-semibold text-xs">
+										{formatDistance(product.distanceKm)}
+									</span>
+								</>
+							)}
+							<span>·</span>
 							<span className="bg-amber-50 text-amber-700 font-semibold px-1.5 py-0.5 rounded">
-								★ 4.8 (12 ulasan)
+								★ {avgRating !== null ? avgRating.toFixed(1) : '--'} ({totalReviews} ulasan)
 							</span>
-							<span>•</span>
+							<span>·</span>
 							<span className="text-green-600 font-medium">
 								350+ diselamatkan
 							</span>
@@ -234,92 +274,21 @@ export default function DetailProductPage() {
 						</button>
 					</div>
 
-					{/* Trust & Safety */}
-					<div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-						<h3 className="font-semibold text-gray-900 mb-3">
-							Kenapa Produk Ini Aman
-						</h3>
-						<div className="grid grid-cols-2 gap-3">
-							<div className="bg-green-50 rounded-xl p-3">
-								<div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mb-2">
-									<Check className="w-4 h-4 text-green-700" />
-								</div>
-								<p className="text-xs font-semibold text-gray-900">
-									Diproduksi Hari Ini
-								</p>
-								<p className="text-[10px] text-gray-500 mt-0.5">
-									Makanan fresh, bukan sisa kemarin
-								</p>
-							</div>
-							<div className="bg-blue-50 rounded-xl p-3">
-								<div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mb-2">
-									<Check className="w-4 h-4 text-blue-700" />
-								</div>
-								<p className="text-xs font-semibold text-gray-900">
-									Higienis & Bersih
-								</p>
-								<p className="text-[10px] text-gray-500 mt-0.5">
-									Standar kebersihan terjamin
-								</p>
-							</div>
-							<div className="bg-purple-50 rounded-xl p-3">
-								<div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mb-2">
-									<Check className="w-4 h-4 text-purple-700" />
-								</div>
-								<p className="text-xs font-semibold text-gray-900">
-									Kemasan Food Grade
-								</p>
-								<p className="text-[10px] text-gray-500 mt-0.5">
-									Dikemas dengan standar aman
-								</p>
-							</div>
-							<div className="bg-amber-50 rounded-xl p-3">
-								<div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center mb-2">
-									<Clock className="w-4 h-4 text-amber-700" />
-								</div>
-								<p className="text-xs font-semibold text-gray-900">
-									Batas Konsumsi Jelas
-								</p>
-								<p className="text-[10px] text-gray-500 mt-0.5">
-									Informasi waktu expired transparan
-								</p>
-							</div>
-						</div>
-						<div className="mt-4 p-3 bg-[var(--primary)]/5 rounded-2xl border border-[var(--primary)]/10 flex items-center gap-3">
-							<div className="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center shrink-0">
-								<ShieldCheck className="w-7 h-7 text-[var(--primary)]" />
-							</div>
-							<div>
-								<h4 className="text-sm font-bold text-gray-900">
-									Terverifikasi LastBite
-								</h4>
-								<p className="text-[10px] text-gray-500 leading-tight">
-									Produk ini telah melewati verifikasi standar
-									keamanan pangan harian kami.
-								</p>
-							</div>
-						</div>
-					</div>
-
-					{/* Reviews - empty state (will be implemented in M8) */}
+					{/* Reviews with real data */}
 					<div>
-						<h3 className="font-bold text-lg text-gray-900 mb-2">
+						<h3 className="font-bold text-lg text-gray-900 mb-3">
 							Ulasan Pembeli
 						</h3>
-						<div className="flex items-center gap-1 mb-3">
-							<Star className="w-4 h-4 fill-[var(--secondary)] text-[var(--secondary)]" />
-							<span className="font-semibold text-gray-900">
-								4.7
-							</span>
-							<span className="text-gray-500 text-sm">
-								(12 ulasan)
-							</span>
-						</div>
-						<div className="bg-gray-50 rounded-xl p-6 text-center">
-							<p className="text-gray-400 text-sm">
-								Fitur ulasan akan segera hadir
-							</p>
-						</div>
+						<ReviewList
+							reviews={reviews}
+							avgRating={avgRating}
+							totalReviews={totalReviews}
+							ratingDistribution={ratingDistribution}
+							loading={reviewsLoading}
+							error={reviewsError}
+							hasMore={hasMore}
+							onLoadMore={loadMore}
+						/>
 					</div>
 
 					{/* AI Recommendation */}
@@ -375,6 +344,9 @@ export default function DetailProductPage() {
 				isOpen={isMapOpen}
 				onClose={() => setIsMapOpen(false)}
 				storeName={product.storeName}
+				address={product.storeAddress ?? undefined}
+				storeLat={product.storeLat}
+				storeLng={product.storeLng}
 			/>
 		</div>
 	);
