@@ -49,3 +49,16 @@ export async function fetchProductPerformance(params: AnalyticsQueryParams): Pro
   const query = new URLSearchParams({ from: params.from, to: params.to });
   return apiFetch<{ products: ProductPerformanceEntry[] }>(`/mitra/analytics/products?${query}`, { auth: true });
 }
+
+export interface PeakHourEntry {
+  hour: number;
+  label: string;
+  orders: number;
+  items: number;
+  revenue: number;
+}
+
+export async function fetchPeakHours(params: AnalyticsQueryParams): Promise<{ hours: PeakHourEntry[] }> {
+  const query = new URLSearchParams({ from: params.from, to: params.to });
+  return apiFetch<{ hours: PeakHourEntry[] }>(`/mitra/analytics/peak-hours?${query}`, { auth: true });
+}

@@ -104,3 +104,11 @@ export interface ProductPerformanceEntry {
   totalRevenue: number;
   averageRating: number;
 }
+
+export interface PeakHourEntry {
+  hour: number;
+  label: string;
+  orders: number;
+  items: number;
+  revenue: number;
+}

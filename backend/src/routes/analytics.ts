@@ -1,6 +1,6 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
 import { requireAuth, requireMitra } from '../middleware/auth.js';
-import { getSalesTrend, getRevenueSummary, getProductPerformance, AnalyticsError } from '../services/mitraAnalyticsService.js';
+import { getSalesTrend, getRevenueSummary, getProductPerformance, getPeakHours, AnalyticsError } from '../services/mitraAnalyticsService.js';
 import type { RevenueSummary } from '../services/mitraAnalyticsService.js';
 import { analyticsQuerySchema } from '../validators/analytics.js';
 
@@ -66,6 +66,26 @@ analyticsRouter.get('/products', requireMitra, async (req: Request, res: Respons
     const { from, to } = parsed.data;
     const products = await getProductPerformance(req.user!.userId, new Date(from), new Date(to));
     res.json({ products });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /mitra/analytics/peak-hours - Hourly order distribution
+analyticsRouter.get('/peak-hours', requireMitra, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const parsed = analyticsQuerySchema.safeParse(req.query);
+    if (!parsed.success) {
+      res.status(400).json({
+        error: parsed.error.errors.map((e) => e.message).join(', '),
+        code: 'VALIDATION_ERROR',
+      });
+      return;
+    }
+
+    const { from, to } = parsed.data;
+    const hours = await getPeakHours(req.user!.userId, new Date(from), new Date(to));
+    res.json({ hours });
   } catch (err) {
     next(err);
   }

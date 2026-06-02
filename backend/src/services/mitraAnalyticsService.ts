@@ -208,3 +208,58 @@ export async function getProductPerformance(
   result.sort((a, b) => b.totalSold - a.totalSold);
   return result;
 }
+
+export interface PeakHourEntry {
+  hour: number;
+  label: string;
+  orders: number;
+  items: number;
+  revenue: number;
+}
+
+export async function getPeakHours(
+  mitraId: string,
+  from: Date,
+  to: Date
+): Promise<PeakHourEntry[]> {
+  const products = await prisma.product.findMany({
+    where: { mitraId },
+    select: { id: true },
+  });
+  const productIds = products.map((p) => p.id);
+
+  const hourMap = new Map<number, PeakHourEntry>();
+  for (let h = 0; h < 24; h++) {
+    hourMap.set(h, { hour: h, label: `${String(h).padStart(2, '0')}:00`, orders: 0, items: 0, revenue: 0 });
+  }
+
+  if (productIds.length === 0) {
+    return Array.from(hourMap.values());
+  }
+
+  const orders = await prisma.order.findMany({
+    where: {
+      status: { in: ['PICKED_UP', 'READY'] },
+      createdAt: { gte: from, lte: to },
+      items: { some: { productId: { in: productIds } } },
+    },
+    select: {
+      createdAt: true,
+      totalAmount: true,
+      items: {
+        where: { productId: { in: productIds } },
+        select: { quantity: true },
+      },
+    },
+  });
+
+  for (const order of orders) {
+    const hour = order.createdAt.getHours();
+    const entry = hourMap.get(hour)!;
+    entry.orders += 1;
+    entry.items += order.items.reduce((sum, i) => sum + i.quantity, 0);
+    entry.revenue += order.totalAmount;
+  }
+
+  return Array.from(hourMap.values());
+}
