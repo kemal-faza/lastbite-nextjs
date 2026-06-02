@@ -1,12 +1,22 @@
 'use client';
 
-import { ArrowLeft, Store, Package, Plus, ExternalLink, Loader2 } from 'lucide-react';
+import { ArrowLeft, Store, Package, Plus, ExternalLink, Loader2, BarChart3, LayoutDashboard } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getMitraProfile, fetchMitraStats, fetchMitraProducts, type MitraProfile, type MitraStats } from '@/lib/api/mitra';
 import type { ProductData } from '@/lib/api/products';
+import { fetchSalesTrend, fetchRevenueSummary, fetchProductPerformance, fetchPeakHours } from '@/lib/api/analytics';
+import type { SalesTrendEntry, RevenueSummary, ProductPerformanceEntry, PeakHourEntry } from '@/lib/api/analytics';
 import DashboardStatCards from '@/components/DashboardStatCards';
 import ProductManagementList from '@/components/ProductManagementList';
+import DateRangeFilter from '@/components/analytics/DateRangeFilter';
+import SalesTrendChart from '@/components/analytics/SalesTrendChart';
+import RevenueSummaryComponent from '@/components/analytics/RevenueSummary';
+import ProductRanking from '@/components/analytics/ProductRanking';
+import PeakHoursChart from '@/components/analytics/PeakHoursChart';
+import CsvExportButton from '@/components/analytics/CsvExportButton';
+
+type Tab = 'overview' | 'analytics';
 
 export default function SellerDashboardPage() {
   const router = useRouter();
@@ -15,6 +25,20 @@ export default function SellerDashboardPage() {
   const [stats, setStats] = useState<MitraStats | null>(null);
   const [products, setProducts] = useState<ProductData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<Tab>('overview');
+
+  // Analytics state
+  const [dateRange, setDateRange] = useState(() => {
+    const to = new Date();
+    const from = new Date();
+    from.setDate(from.getDate() - 30);
+    return { from, to };
+  });
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [salesTrend, setSalesTrend] = useState<SalesTrendEntry[]>([]);
+  const [revenueSummary, setRevenueSummary] = useState<RevenueSummary | null>(null);
+  const [productPerf, setProductPerf] = useState<ProductPerformanceEntry[]>([]);
+  const [peakHours, setPeakHours] = useState<PeakHourEntry[]>([]);
 
   const loadData = async () => {
     try {
@@ -27,15 +51,49 @@ export default function SellerDashboardPage() {
       setStats(statsRes?.stats ?? null);
       setProducts(productsRes.products);
     } catch {
-      // User not mitra
+      // Not a mitra
     } finally {
       setLoading(false);
     }
   };
 
+  const loadAnalytics = useCallback(async () => {
+    if (!profile) return;
+    setAnalyticsLoading(true);
+    try {
+      const params = {
+        from: dateRange.from.toISOString(),
+        to: dateRange.to.toISOString(),
+        granularity: 'daily' as const,
+      };
+
+      const [trendRes, revenueRes, productsRes, hoursRes] = await Promise.allSettled([
+        fetchSalesTrend(params),
+        fetchRevenueSummary(params),
+        fetchProductPerformance(params),
+        fetchPeakHours(params),
+      ]);
+
+      if (trendRes.status === 'fulfilled') setSalesTrend(trendRes.value.trend);
+      if (revenueRes.status === 'fulfilled') setRevenueSummary(revenueRes.value.summary);
+      if (productsRes.status === 'fulfilled') setProductPerf(productsRes.value.products);
+      if (hoursRes.status === 'fulfilled') setPeakHours(hoursRes.value.hours);
+    } catch {
+      // analytics fetch failed silently
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  }, [profile, dateRange]);
+
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'analytics' && profile) {
+      loadAnalytics();
+    }
+  }, [activeTab, dateRange, profile, loadAnalytics]);
 
   if (loading) {
     return (
@@ -78,7 +136,7 @@ export default function SellerDashboardPage() {
     );
   }
 
-  // Mitra view -- full dashboard
+  // Mitra view
   return (
     <div className="size-full flex flex-col bg-[var(--background)] overflow-hidden relative max-w-md mx-auto min-h-[100dvh] shadow-xl">
       {/* Header */}
@@ -90,72 +148,133 @@ export default function SellerDashboardPage() {
           <h1 className="flex-1 text-base font-bold text-center">{profile.storeName}</h1>
           <Store className="w-5 h-5 text-white/80" />
         </div>
+
+        {/* Tab Navigation */}
+        <div className="flex gap-1 mt-3 bg-white/10 rounded-xl p-1">
+          <button
+            onClick={() => setActiveTab('overview')}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-colors ${
+              activeTab === 'overview'
+                ? 'bg-white text-[var(--primary)] shadow-sm'
+                : 'text-white/80 hover:text-white'
+            }`}
+          >
+            <LayoutDashboard className="w-3.5 h-3.5" />
+            Ringkasan
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab('analytics');
+              router.push('/seller');
+            }}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-colors ${
+              activeTab === 'analytics'
+                ? 'bg-white text-[var(--primary)] shadow-sm'
+                : 'text-white/80 hover:text-white'
+            }`}
+          >
+            <BarChart3 className="w-3.5 h-3.5" />
+            Analitik
+          </button>
+        </div>
       </header>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-4 pt-5 pb-28 space-y-6">
-        {/* Stats */}
-        {stats && (
-          <section>
-            <h2 className="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">
-              Ringkasan Hari Ini
-            </h2>
-            <DashboardStatCards stats={stats} />
-            {stats.activeOrders > 0 && (
-              <button
-                onClick={() => router.push('/seller/orders')}
-                className="mt-3 w-full bg-[var(--secondary)]/10 text-[var(--secondary)] font-medium text-sm px-4 py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-[var(--secondary)]/20 transition-colors"
-              >
-                <Package className="w-4 h-4" />
-                {stats.activeOrders} Pesanan Masuk
-                <ExternalLink className="w-3.5 h-3.5" />
-              </button>
+      <div className="flex-1 overflow-y-auto px-4 pt-5 pb-28">
+        {activeTab === 'overview' ? (
+          /* === OVERVIEW TAB === */
+          <div className="space-y-6">
+            {stats && (
+              <section>
+                <h2 className="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">
+                  Ringkasan Hari Ini
+                </h2>
+                <DashboardStatCards stats={stats} />
+                {stats.activeOrders > 0 && (
+                  <button
+                    onClick={() => router.push('/seller/orders')}
+                    className="mt-3 w-full bg-[var(--secondary)]/10 text-[var(--secondary)] font-medium text-sm px-4 py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-[var(--secondary)]/20 transition-colors"
+                  >
+                    <Package className="w-4 h-4" />
+                    {stats.activeOrders} Pesanan Masuk
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </section>
             )}
-          </section>
+
+            <div className="bg-gradient-to-r from-green-50 to-teal-50 rounded-2xl p-4 border border-green-100">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center shrink-0">
+                  <Store className="w-5 h-5 text-green-700" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 text-sm">Mitra LastBite</h3>
+                  <p className="text-xs text-gray-600 mt-1 leading-relaxed">
+                    Kamu tidak dikenakan biaya platform.
+                    <br />Biaya layanan ditanggung sepenuhnya oleh LastBite
+                    sebagai bentuk dukungan untuk mitra mengurangi food waste.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <section>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold text-gray-600 uppercase tracking-wider">
+                  Produk ({stats?.productCount ?? products.length})
+                </h2>
+                <button
+                  onClick={() => router.push('/seller/add')}
+                  className="text-xs font-medium text-[var(--primary)] flex items-center gap-1"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Tambah
+                </button>
+              </div>
+              <ProductManagementList products={products} onProductDeleted={loadData} />
+            </section>
+          </div>
+        ) : (
+          /* === ANALYTICS TAB === */
+          <div className="space-y-5">
+            {/* Date Range + Export */}
+            <div className="flex items-center justify-between">
+              <DateRangeFilter value={dateRange} onChange={setDateRange} />
+              <CsvExportButton
+                from={dateRange.from.toISOString()}
+                to={dateRange.to.toISOString()}
+                disabled={analyticsLoading}
+              />
+            </div>
+
+            {/* Revenue Summary */}
+            <RevenueSummaryComponent
+              data={revenueSummary || { totalRevenue: 0, totalSavings: 0, totalOrders: 0, totalItems: 0, averageOrderValue: 0 }}
+              loading={analyticsLoading}
+            />
+
+            {/* Sales Trend */}
+            <SalesTrendChart data={salesTrend} granularity="daily" loading={analyticsLoading} />
+
+            {/* Peak Hours */}
+            <PeakHoursChart data={peakHours} loading={analyticsLoading} />
+
+            {/* Product Ranking */}
+            <ProductRanking data={productPerf} loading={analyticsLoading} />
+          </div>
         )}
-
-        {/* Platform Info */}
-        <div className="bg-gradient-to-r from-green-50 to-teal-50 rounded-2xl p-4 border border-green-100">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center shrink-0">
-              <Store className="w-5 h-5 text-green-700" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-900 text-sm">Mitra LastBite</h3>
-              <p className="text-xs text-gray-600 mt-1 leading-relaxed">
-                Kamu tidak dikenakan biaya platform.
-                <br />Biaya layanan ditanggung sepenuhnya oleh LastBite
-                sebagai bentuk dukungan untuk mitra mengurangi food waste.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Products */}
-        <section>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-gray-600 uppercase tracking-wider">
-              Produk ({stats?.productCount ?? products.length})
-            </h2>
-            <button
-              onClick={() => router.push('/seller/add')}
-              className="text-xs font-medium text-[var(--primary)] flex items-center gap-1"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              Tambah
-            </button>
-          </div>
-          <ProductManagementList products={products} onProductDeleted={loadData} />
-        </section>
       </div>
 
-      {/* FAB */}
-      <button
-        onClick={() => router.push('/seller/add')}
-        className="fixed bottom-24 right-6 w-14 h-14 rounded-full bg-[var(--primary)] text-white shadow-lg flex items-center justify-center hover:bg-[var(--primary)]/90 transition-colors z-50"
-      >
-        <Plus className="w-7 h-7" />
-      </button>
+      {/* FAB - only on overview tab */}
+      {activeTab === 'overview' && (
+        <button
+          onClick={() => router.push('/seller/add')}
+          className="fixed bottom-24 right-6 w-14 h-14 rounded-full bg-[var(--primary)] text-white shadow-lg flex items-center justify-center hover:bg-[var(--primary)]/90 transition-colors z-50"
+        >
+          <Plus className="w-7 h-7" />
+        </button>
+      )}
     </div>
   );
 }
