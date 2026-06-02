@@ -35,3 +35,17 @@ export async function fetchRevenueSummary(params: AnalyticsQueryParams): Promise
   const query = new URLSearchParams({ from: params.from, to: params.to });
   return apiFetch<{ summary: RevenueSummary }>(`/mitra/analytics/revenue?${query}`, { auth: true });
 }
+
+export interface ProductPerformanceEntry {
+  productId: string;
+  productName: string;
+  category: string;
+  totalSold: number;
+  totalRevenue: number;
+  averageRating: number;
+}
+
+export async function fetchProductPerformance(params: AnalyticsQueryParams): Promise<{ products: ProductPerformanceEntry[] }> {
+  const query = new URLSearchParams({ from: params.from, to: params.to });
+  return apiFetch<{ products: ProductPerformanceEntry[] }>(`/mitra/analytics/products?${query}`, { auth: true });
+}

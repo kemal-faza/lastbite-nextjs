@@ -95,3 +95,12 @@ export interface RevenueSummary {
   totalItems: number;
   averageOrderValue: number;
 }
+
+export interface ProductPerformanceEntry {
+  productId: string;
+  productName: string;
+  category: string;
+  totalSold: number;
+  totalRevenue: number;
+  averageRating: number;
+}
