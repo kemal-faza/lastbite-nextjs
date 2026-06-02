@@ -87,6 +87,11 @@ export async function updateMitraProduct(
     },
   });
 
+  // Check if stock was replenished (was 0, now > 0)
+  if (input.stock !== undefined && product.stock === 0 && input.stock > 0) {
+    await notifyStockReplenished(updated);
+  }
+
   return toProductResponse(updated);
 }
 
@@ -102,5 +107,30 @@ export async function deleteMitraProduct(mitraId: string, productId: string): Pr
   await prisma.product.update({
     where: { id: productId },
     data: { isActive: false },
+  });
+}
+
+async function notifyStockReplenished(product: { id: string; name: string }) {
+  const subscriptions = await prisma.wishlistSubscription.findMany({
+    where: { productId: product.id },
+    include: { user: { select: { id: true } } },
+  });
+
+  if (subscriptions.length === 0) return;
+
+  // Create notifications for all subscribed users in bulk
+  await prisma.notification.createMany({
+    data: subscriptions.map((sub) => ({
+      userId: sub.user.id,
+      title: 'Stok Favorit Tersedia',
+      body: `${product.name} tersedia kembali. Segera pesan sebelum kehabisan!`,
+      type: 'stock_alert',
+      data: { productId: product.id },
+    })),
+  });
+
+  // One-time alert per replenishment -- clear subscriptions
+  await prisma.wishlistSubscription.deleteMany({
+    where: { productId: product.id },
   });
 }
