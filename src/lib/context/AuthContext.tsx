@@ -29,6 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
     const stored = localStorage.getItem('user');
     const token = localStorage.getItem('accessToken');
 
@@ -36,26 +37,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const parsed = JSON.parse(stored);
         setUser(parsed);
-
-        // Verify token is still valid by fetching profile
-        apiFetch<{ user: User }>('/users/me', { auth: true })
-          .then((data) => {
-            setUser(data.user);
-            localStorage.setItem('user', JSON.stringify(data.user));
-          })
-          .catch(() => {
-            clearTokens();
-            setUser(null);
-          })
-          .finally(() => setIsLoading(false));
       } catch {
         clearTokens();
         setUser(null);
         setIsLoading(false);
+        return;
       }
+
+      // Verify token is still valid by fetching profile
+      apiFetch<{ user: User }>('/users/me', { auth: true })
+        .then((data) => {
+          if (cancelled) return;
+          setUser(data.user);
+          localStorage.setItem('user', JSON.stringify(data.user));
+        })
+        .catch(() => {
+          if (cancelled) return;
+          clearTokens();
+          setUser(null);
+        })
+        .finally(() => {
+          if (!cancelled) setIsLoading(false);
+        });
     } else {
       setIsLoading(false);
     }
+
+    return () => { cancelled = true; };
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {

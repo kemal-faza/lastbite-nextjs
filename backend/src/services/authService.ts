@@ -3,30 +3,13 @@ import { hashPassword, verifyPassword } from '../lib/password.js';
 import { getOtpSender } from '../lib/otpSender.js';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../lib/jwt.js';
 import { config } from '../config.js';
+import { toUserResponse } from '../lib/userResponse.js';
 import type { UserResponse, AuthTokens, LoginResponse } from '../types/index.js';
 
 function generateOtpCode(): string {
   const min = Math.pow(10, config.otpLength - 1);
   const max = Math.pow(10, config.otpLength) - 1;
   return (Math.floor(Math.random() * (max - min + 1)) + min).toString();
-}
-
-function toUserResponse(user: {
-  id: string;
-  email: string;
-  name: string;
-  phone: string | null;
-  isVerified: boolean;
-  createdAt: Date;
-}): UserResponse {
-  return {
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    phone: user.phone,
-    isVerified: user.isVerified,
-    createdAt: user.createdAt.toISOString(),
-  };
 }
 
 export class EmailAlreadyExistsError extends Error {

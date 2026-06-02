@@ -92,10 +92,18 @@ export async function apiFetch<T = unknown>(
     }
   }
 
-  const body = await res.json();
+  const contentType = res.headers.get('content-type') || '';
+  let body: Record<string, unknown>;
+
+  if (contentType.includes('application/json')) {
+    body = await res.json();
+  } else {
+    const text = await res.text();
+    body = { error: text, code: 'UNKNOWN' };
+  }
 
   if (!res.ok) {
-    throw new ApiError(res.status, body.code || 'UNKNOWN', body.error || 'Unknown error');
+    throw new ApiError(res.status, (body.code as string) || 'UNKNOWN', (body.error as string) || 'Unknown error');
   }
 
   return body as T;

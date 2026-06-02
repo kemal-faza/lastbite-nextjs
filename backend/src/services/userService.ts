@@ -1,23 +1,6 @@
 import { prisma } from '../lib/prisma.js';
+import { toUserResponse } from '../lib/userResponse.js';
 import type { UserResponse } from '../types/index.js';
-
-function toUserResponse(user: {
-  id: string;
-  email: string;
-  name: string;
-  phone: string | null;
-  isVerified: boolean;
-  createdAt: Date;
-}): UserResponse {
-  return {
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    phone: user.phone,
-    isVerified: user.isVerified,
-    createdAt: user.createdAt.toISOString(),
-  };
-}
 
 export class UserNotFoundError extends Error {
   constructor() {
@@ -38,6 +21,11 @@ export async function updateProfile(
   userId: string,
   data: { name?: string; phone?: string }
 ): Promise<UserResponse> {
+  const existing = await prisma.user.findUnique({ where: { id: userId } });
+  if (!existing) {
+    throw new UserNotFoundError();
+  }
+
   const user = await prisma.user.update({
     where: { id: userId },
     data: {
