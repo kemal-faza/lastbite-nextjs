@@ -12,7 +12,7 @@ import {
 	ShieldCheck,
 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useProduct } from '@/hooks/useProduct';
+import { useProduct, useProducts } from '@/hooks/useProduct';
 import { ImageWithFallback } from '@/components/ImageWithFallback';
 import { AIRecommendation } from '@/components/AIRecommendation';
 import { useCart } from '@/lib/context/CartContext';
@@ -74,6 +74,7 @@ export default function DetailProductPage() {
 	const { id } = useParams();
 	const router = useRouter();
 	const { product, loading, error, refetch } = useProduct(id as string);
+	const { products: allProducts } = useProducts();
 	const { items: cartItems, addItem, clearCart } = useCart();
 	const [isMapOpen, setIsMapOpen] = useState(false);
 	const { toggle, isWishlisted } = useWishlist();
@@ -325,7 +326,8 @@ export default function DetailProductPage() {
 					{/* AI Recommendation */}
 					<div className="pt-2">
 						<AIRecommendation
-							currentProductId={numericId}
+							products={allProducts}
+							currentProductId={product.id}
 							title="Kamu mungkin juga suka"
 						/>
 					</div>

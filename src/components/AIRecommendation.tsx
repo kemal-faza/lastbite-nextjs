@@ -1,13 +1,13 @@
 'use client';
 
 import { Sparkles, Info } from 'lucide-react';
-import { products, type Product } from '@/lib/data/products';
-import type { ProductData } from '@/lib/api/products';
+import { getImageUrl, type ProductData } from '@/lib/api/products';
 import { useRouter } from 'next/navigation';
 import { useState, useMemo } from 'react';
 
 interface AIRecommendationProps {
-	currentProductId?: number;
+	products: ProductData[];
+	currentProductId?: string;
 	title?: string;
 }
 
@@ -42,12 +42,21 @@ function pseudoRandom(seed: number): number {
  *    - Makin sedikit stok tersisa, makin populer produknya
  *    - Reason: stok hampir habis = banyak orang beli
  */
+function getNumericSeed(id: string): number {
+	let num = 0;
+	for (let i = 0; i < id.length; i++) {
+		num = ((num << 5) - num + id.charCodeAt(i)) | 0;
+	}
+	return Math.abs(num);
+}
+
 function getScoreBreakdown(
-	product: Product,
+	product: ProductData,
 	currentCategory?: string,
 ): ScoreBreakdown {
+	const idSeed = getNumericSeed(product.id);
 	const seed =
-		product.id * 1000 +
+		idSeed * 1000 +
 		(currentCategory ? product.category.charCodeAt(0) * 7 : 0);
 
 	// 1. Category Match (0-40) -- deterministic dari seed
@@ -57,13 +66,13 @@ function getScoreBreakdown(
 			: 10 + Math.floor(pseudoRandom(seed + 2) * 11); // 10-20
 
 	// 2. Discount Value (0-30) -- pure logic, no random needed
-	const discount = Math.min(30, Math.round(product.discount * 0.6));
+	const discount = Math.min(30, Math.round(product.discountPercent * 0.6));
 
 	// 3. Popularity (0-30) -- deterministic dari seed
 	const popularity =
-		product.remaining <= 3
+		product.stock <= 3
 			? 25 + Math.floor(pseudoRandom(seed + 3) * 6)
-			: product.remaining <= 7
+			: product.stock <= 7
 				? 15 + Math.floor(pseudoRandom(seed + 4) * 10)
 				: 5 + Math.floor(pseudoRandom(seed + 5) * 10);
 
@@ -72,11 +81,11 @@ function getScoreBreakdown(
 	return { category, discount, popularity, total };
 }
 
-function getRecommendations(currentId?: number) {
-	const current = currentId ? products.find((p) => p.id === currentId) : null;
+function getRecommendations(allProducts: ProductData[], currentId?: string) {
+	const current = currentId ? allProducts.find((p) => p.id === currentId) : null;
 	const currentCategory = current?.category;
 
-	const scored = products
+	const scored = allProducts
 		.filter((p) => p.id !== currentId)
 		.map((p) => {
 			const breakdown = getScoreBreakdown(p, currentCategory);
@@ -137,16 +146,17 @@ function BreakdownTooltip({ breakdown }: { breakdown: ScoreBreakdown }) {
 }
 
 export function AIRecommendation({
+	products,
 	currentProductId,
 	title,
 }: AIRecommendationProps) {
 	const router = useRouter();
-	const [tooltipId, setTooltipId] = useState<number | null>(null);
+	const [tooltipId, setTooltipId] = useState<string | null>(null);
 
 	// useMemo: rekomendasi cuma dihitung ulang kalo currentProductId berubah
 	const recommendations = useMemo(
-		() => getRecommendations(currentProductId),
-		[currentProductId],
+		() => getRecommendations(products, currentProductId),
+		[products, currentProductId],
 	);
 
 	const displayTitle = title || 'Rekomendasi AI untuk kamu';
@@ -190,7 +200,7 @@ export function AIRecommendation({
 						className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-left overflow-hidden relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
 						<div className="relative">
 							<img
-								src={product.image}
+								src={getImageUrl(product.imageUrl) ?? ''}
 								alt={product.name}
 								className="w-full h-28 object-cover"
 							/>
@@ -227,7 +237,7 @@ export function AIRecommendation({
 								{product.name}
 							</h3>
 							<p className="text-[10px] text-gray-500 truncate">
-								{product.store}
+								{product.storeName}
 							</p>
 							<div className="flex items-center gap-1 mt-1">
 								<span className="text-sm font-bold text-[var(--secondary)]">

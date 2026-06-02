@@ -52,7 +52,7 @@ export default function HomePage() {
             <span className="font-semibold">Makanan Surplus Aman.</span> Setiap produk melewati cek kualitas. Diproduksi hari yang sama dengan standar higienis terjamin.
           </p>
         </div>
-        <AIRecommendation />
+        <AIRecommendation products={products} />
         <CategoryFilter selected={selectedCategory} onSelect={setSelectedCategory} />
         <FilterBar
           activeSort={sortBy}
