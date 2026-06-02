@@ -122,4 +122,12 @@ describe('Order status push notifications', () => {
     const readyNotif = notifs.find((n) => n.body.includes('siap diambil'));
     expect(readyNotif).toBeDefined();
   });
+
+  it('should have device token registered for push delivery', async () => {
+    const devices = await prisma.deviceToken.findMany({
+      where: { userId: foodSaverId },
+    });
+    expect(devices.length).toBe(1);
+    expect(devices[0].token).toBe('fcm-test-buyer');
+  });
 });

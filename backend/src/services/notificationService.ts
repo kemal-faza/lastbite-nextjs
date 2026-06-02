@@ -1,4 +1,5 @@
 import { prisma } from '../lib/prisma.js';
+import { sendPush } from '../lib/fcm.js';
 
 export class NotificationError extends Error {
   constructor(message: string, public code: string) {
@@ -25,6 +26,34 @@ export async function createNotification(input: CreateNotificationInput) {
       data: input.data || {},
     },
   });
+}
+
+/**
+ * Send FCM push notification to all devices registered for a user.
+ * Silently handles errors and empty device lists so callers don't need try/catch.
+ */
+export async function sendNotificationPush(
+  userId: string,
+  title: string,
+  body: string,
+  data?: Record<string, string>
+): Promise<void> {
+  try {
+    const devices = await prisma.deviceToken.findMany({
+      where: { userId },
+      select: { token: true },
+    });
+
+    if (devices.length === 0) return;
+
+    await sendPush(
+      devices.map((d) => d.token),
+      { title, body, data }
+    );
+  } catch (err) {
+    // Push notification failure should not break the main flow
+    console.error('[Notification] Failed to send push:', err);
+  }
 }
 
 export async function getNotifications(

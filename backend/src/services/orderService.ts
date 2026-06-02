@@ -1,5 +1,6 @@
 import { prisma } from '../lib/prisma.js';
 import { getCart } from './cartService.js';
+import { sendNotificationPush } from './notificationService.js';
 
 export class OrderError extends Error {
   constructor(message: string, public code: string) {
@@ -39,7 +40,7 @@ export async function createOrder(userId: string, input: CreateOrderInput) {
     throw new OrderError('Keranjang kosong', 'CART_EMPTY');
   }
 
-  return prisma.$transaction(async (tx) => {
+  const order = await prisma.$transaction(async (tx) => {
     // Verify stock for all items
     for (const item of cart.items) {
       const product = await tx.product.findUnique({ where: { id: item.productId } });
@@ -70,7 +71,7 @@ export async function createOrder(userId: string, input: CreateOrderInput) {
     const pickupExpiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000); // 2 hours
 
     // Create order with items
-    const order = await tx.order.create({
+    const created = await tx.order.create({
       data: {
         userId,
         storeName: cart.storeName!,
@@ -119,14 +120,24 @@ export async function createOrder(userId: string, input: CreateOrderInput) {
       data: {
         userId,
         title: 'Pesanan Berhasil Dibuat',
-        body: `Pesanan kamu di ${cart.storeName} telah dibuat. Kode pickup: ${order.pickupCode}`,
+        body: `Pesanan kamu di ${cart.storeName} telah dibuat. Kode pickup: ${created.pickupCode}`,
         type: 'order_status',
-        data: { orderId: order.id, pickupCode: order.pickupCode },
+        data: { orderId: created.id, pickupCode: created.pickupCode },
       },
     });
 
-    return order;
+    return created;
   });
+
+  // Fire-and-forget push notification outside the transaction
+  sendNotificationPush(
+    userId,
+    'Pesanan Berhasil Dibuat',
+    `Pesanan kamu di ${order.storeName} telah dibuat. Kode pickup: ${order.pickupCode}`,
+    { orderId: order.id, pickupCode: order.pickupCode, type: 'order_status' }
+  );
+
+  return order;
 }
 
 export async function getUserOrders(userId: string) {

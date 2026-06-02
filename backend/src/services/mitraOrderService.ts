@@ -1,6 +1,6 @@
 import { prisma } from '../lib/prisma.js';
 import type { OrderStatus } from '@prisma/client';
-import { createNotification } from './notificationService.js';
+import { createNotification, sendNotificationPush } from './notificationService.js';
 
 export class MitraOrderError extends Error {
   constructor(message: string, public code: string) {
@@ -179,4 +179,12 @@ async function notifyOrderStatusChange(userId: string, orderId: string, newStatu
     type: 'order_status',
     data: { orderId, status: newStatus },
   });
+
+  // Fire-and-forget push notification
+  sendNotificationPush(
+    userId,
+    'Status Pesanan Diperbarui',
+    `Pesanan kamu ${label} oleh mitra`,
+    { orderId, status: newStatus, type: 'order_status' }
+  );
 }
