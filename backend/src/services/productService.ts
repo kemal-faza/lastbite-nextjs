@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
-import type { ProductResponse, ProductListResponse } from '../types/index.js';
+import type { ProductResponse, ProductListResponse, ProductSearchResponse } from '../types/index.js';
 
 export class ProductNotFoundError extends Error {
   constructor() {
@@ -114,4 +114,59 @@ export async function findById(id: string): Promise<ProductResponse> {
     throw new ProductNotFoundError();
   }
   return toProductResponse(product);
+}
+
+export interface SearchOptions {
+  q: string;
+  category?: string;
+  page: number;
+  limit: number;
+}
+
+export async function search(options: SearchOptions): Promise<ProductSearchResponse> {
+  const { q, category, page, limit } = options;
+
+  // Use raw SQL for tsvector search with ILIKE fallback
+  const categoryFilter = category ? `AND p."category" = $4` : '';
+  const params: any[] = [q, limit, (page - 1) * limit];
+  if (category) params.push(category);
+
+  const products = await prisma.$queryRawUnsafe<Array<any>>(
+    `SELECT p."id", p."name", p."description", p."category",
+       p."originalPrice", p."discountedPrice", p."stock",
+       p."imageUrl", p."storeName", p."storeAddress",
+       p."storeLat", p."storeLng", p."expiresAt", p."isActive",
+       p."createdAt", p."updatedAt",
+       ts_rank(p."searchVector", plainto_tsquery('indonesian', $1)) AS rank
+     FROM "products" p
+     WHERE p."isActive" = true
+       AND (p."searchVector" @@ plainto_tsquery('indonesian', $1)
+            OR p."name" ILIKE '%' || $1 || '%'
+            OR p."storeName" ILIKE '%' || $1 || '%')
+       ${categoryFilter}
+     ORDER BY rank DESC, p."createdAt" DESC
+     LIMIT $2 OFFSET $3`,
+    ...params
+  );
+
+  const countResult = await prisma.$queryRawUnsafe<Array<{ count: bigint }>>(
+    `SELECT COUNT(*)::int as count
+     FROM "products" p
+     WHERE p."isActive" = true
+       AND (p."searchVector" @@ plainto_tsquery('indonesian', $1)
+            OR p."name" ILIKE '%' || $1 || '%'
+            OR p."storeName" ILIKE '%' || $1 || '%')
+       ${categoryFilter}`,
+    ...params.slice(0, category ? 2 : 1)
+  );
+
+  const total = Number(countResult[0]?.count || 0);
+
+  return {
+    products: products.map(toProductResponse),
+    total,
+    page,
+    limit,
+    query: q,
+  };
 }
