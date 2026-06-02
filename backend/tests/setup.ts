@@ -11,6 +11,7 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
+  await prisma.auditLog.deleteMany();
   await prisma.review.deleteMany();
   await prisma.notification.deleteMany();
   await prisma.wishlistSubscription.deleteMany();

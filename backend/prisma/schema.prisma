@@ -219,6 +219,21 @@ model WishlistSubscription {
   @@map("wishlist_subscriptions")
 }
 
+model AuditLog {
+  id        String   @id @default(uuid())
+  actorId   String
+  action    String
+  entity    String
+  entityId  String?
+  details   Json?
+  createdAt DateTime @default(now())
+
+  @@index([actorId])
+  @@index([entity])
+  @@index([createdAt(sort: Desc)])
+  @@map("audit_logs")
+}
+
 model Notification {
   id        String   @id @default(uuid())
   userId    String
