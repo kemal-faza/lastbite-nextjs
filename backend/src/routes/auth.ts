@@ -1,6 +1,6 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
-import { registerSchema, loginSchema } from '../validators/auth.js';
-import { register, login, refreshAccessToken, EmailAlreadyExistsError, InvalidCredentialsError, AccountNotVerifiedError, InvalidRefreshTokenError } from '../services/authService.js';
+import { registerSchema, loginSchema, verifyOtpSchema, resendOtpSchema } from '../validators/auth.js';
+import { register, login, refreshAccessToken, verifyOtp, resendOtp, EmailAlreadyExistsError, InvalidCredentialsError, AccountNotVerifiedError, InvalidRefreshTokenError, InvalidOtpError, UserNotFoundError } from '../services/authService.js';
 
 export const authRouter = Router();
 
@@ -68,6 +68,54 @@ authRouter.post('/refresh', async (req: Request, res: Response, next: NextFuncti
   } catch (err) {
     if (err instanceof InvalidRefreshTokenError) {
       res.status(401).json({ error: err.message, code: 'INVALID_REFRESH_TOKEN' });
+      return;
+    }
+    next(err);
+  }
+});
+
+authRouter.post('/verify-otp', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const parsed = verifyOtpSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({
+        error: parsed.error.errors.map((e) => e.message).join(', '),
+        code: 'VALIDATION_ERROR',
+      });
+      return;
+    }
+
+    const result = await verifyOtp(parsed.data);
+    res.json({ verified: result.verified, message: 'Verifikasi berhasil. Akun Anda telah aktif.' });
+  } catch (err) {
+    if (err instanceof InvalidOtpError) {
+      res.status(400).json({ error: err.message, code: 'INVALID_OTP' });
+      return;
+    }
+    if (err instanceof UserNotFoundError) {
+      res.status(404).json({ error: err.message, code: 'USER_NOT_FOUND' });
+      return;
+    }
+    next(err);
+  }
+});
+
+authRouter.post('/resend-otp', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const parsed = resendOtpSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({
+        error: parsed.error.errors.map((e) => e.message).join(', '),
+        code: 'VALIDATION_ERROR',
+      });
+      return;
+    }
+
+    await resendOtp(parsed.data);
+    res.json({ message: 'Kode verifikasi baru telah dikirim.' });
+  } catch (err) {
+    if (err instanceof UserNotFoundError) {
+      res.status(404).json({ error: err.message, code: 'USER_NOT_FOUND' });
       return;
     }
     next(err);

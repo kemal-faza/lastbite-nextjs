@@ -115,11 +115,78 @@ export async function login(input: {
   };
 }
 
+export class InvalidOtpError extends Error {
+  constructor() {
+    super('Kode verifikasi tidak valid atau telah kedaluwarsa');
+    this.name = 'InvalidOtpError';
+  }
+}
+
+export class UserNotFoundError extends Error {
+  constructor() {
+    super('Pengguna tidak ditemukan');
+    this.name = 'UserNotFoundError';
+  }
+}
+
 export class InvalidRefreshTokenError extends Error {
   constructor() {
     super('Refresh token tidak valid');
     this.name = 'InvalidRefreshTokenError';
   }
+}
+
+export async function verifyOtp(input: { email: string; code: string }): Promise<{ verified: boolean }> {
+  const user = await prisma.user.findUnique({ where: { email: input.email } });
+  if (!user) {
+    throw new UserNotFoundError();
+  }
+
+  if (user.isVerified) {
+    return { verified: true };
+  }
+
+  if (
+    user.verificationCode !== input.code ||
+    !user.verificationCodeExpiresAt ||
+    user.verificationCodeExpiresAt < new Date()
+  ) {
+    throw new InvalidOtpError();
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      isVerified: true,
+      verificationCode: null,
+      verificationCodeExpiresAt: null,
+    },
+  });
+
+  return { verified: true };
+}
+
+export async function resendOtp(input: { email: string }): Promise<void> {
+  const user = await prisma.user.findUnique({ where: { email: input.email } });
+  if (!user) {
+    throw new UserNotFoundError();
+  }
+
+  if (user.isVerified) {
+    return;
+  }
+
+  const verificationCode = generateOtpCode();
+  const verificationCodeExpiresAt = new Date(
+    Date.now() + config.otpExpiryMinutes * 60 * 1000
+  );
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { verificationCode, verificationCodeExpiresAt },
+  });
+
+  await getOtpSender().sendOtp(user.email, verificationCode);
 }
 
 export async function refreshAccessToken(token: string): Promise<AuthTokens> {
