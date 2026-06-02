@@ -1,5 +1,0 @@
-{
-  "/seller/add/page": "app/seller/add/page.js",
-  "/(main)/product/[id]/page": "app/(main)/product/[id]/page.js",
-  "/(main)/order/confirm/[id]/page": "app/(main)/order/confirm/[id]/page.js"
-}
