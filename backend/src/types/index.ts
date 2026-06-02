@@ -29,6 +29,7 @@ export interface ProductResponse {
   category: string;
   originalPrice: number;
   discountedPrice: number;
+  /** Computed: Math.round(((originalPrice - discountedPrice) / originalPrice) * 100) */
   discountPercent: number;
   stock: number;
   imageUrl: string | null;
@@ -39,20 +40,20 @@ export interface ProductResponse {
   expiresAt: string;
   isActive: boolean;
   createdAt: string;
+  updatedAt: string;
 }
 
-export interface ProductListResponse {
+interface PaginatedResponse {
   products: ProductResponse[];
   total: number;
   page: number;
   limit: number;
+}
+
+export interface ProductListResponse extends PaginatedResponse {
   totalPages: number;
 }
 
-export interface ProductSearchResponse {
-  products: ProductResponse[];
-  total: number;
-  page: number;
-  limit: number;
+export interface ProductSearchResponse extends PaginatedResponse {
   query: string;
 }

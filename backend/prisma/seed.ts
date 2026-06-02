@@ -1,21 +1,23 @@
 import { PrismaClient, Category } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
+const SALT_ROUNDS = 12;
+const MITRA_EMAIL = "mitra@lastbite.id";
 
-async function main() {
-  console.log("Seeding database...");
+interface MitraUser {
+  id: string;
+  email: string;
+}
 
-  // Create demo MITRA user
-  const { default: bcrypt } = await import("bcryptjs");
-
-  const mitraEmail = "mitra@lastbite.id";
-  let mitra = await prisma.user.findUnique({ where: { email: mitraEmail } });
+async function ensureMitraUser(): Promise<MitraUser> {
+  let mitra = await prisma.user.findUnique({ where: { email: MITRA_EMAIL } });
 
   if (!mitra) {
-    const passwordHash = await bcrypt.hash("password123", 10);
+    const passwordHash = await bcrypt.hash("password123", SALT_ROUNDS);
     mitra = await prisma.user.create({
       data: {
-        email: mitraEmail,
+        email: MITRA_EMAIL,
         name: "Mitra LastBite",
         phone: "081234567890",
         role: "MITRA",
@@ -28,12 +30,15 @@ async function main() {
     console.log(`MITRA user already exists: ${mitra.email}`);
   }
 
-  // Delete existing products
-  await prisma.product.deleteMany();
-  console.log("Cleared existing products");
+  return { id: mitra.id, email: mitra.email };
+}
 
-  // Seed products
-  const products = [
+function getDefaultProducts(mitraId: string) {
+  // Use a fixed future expiry for dev stability (products won't go stale)
+  const expiresInHours = (hours: number) =>
+    new Date(Date.now() + hours * 60 * 60 * 1000);
+
+  return [
     {
       name: "Ayam Preksu",
       description:
@@ -47,8 +52,8 @@ async function main() {
       storeAddress: "Jl. Merdeka No. 12, Bandung",
       storeLat: -6.914744,
       storeLng: 107.60981,
-      expiresAt: new Date(Date.now() + 4 * 60 * 60 * 1000), // 4 hours from now
-      mitraId: mitra.id,
+      expiresAt: expiresInHours(4),
+      mitraId,
     },
     {
       name: "Nasi Padang",
@@ -63,8 +68,8 @@ async function main() {
       storeAddress: "Jl. Diponegoro No. 45, Bandung",
       storeLat: -6.902425,
       storeLng: 107.618756,
-      expiresAt: new Date(Date.now() + 3 * 60 * 60 * 1000),
-      mitraId: mitra.id,
+      expiresAt: expiresInHours(3),
+      mitraId,
     },
     {
       name: "Roti Coklat",
@@ -79,8 +84,8 @@ async function main() {
       storeAddress: "Jl. Braga No. 78, Bandung",
       storeLat: -6.916105,
       storeLng: 107.609536,
-      expiresAt: new Date(Date.now() + 5 * 60 * 60 * 1000),
-      mitraId: mitra.id,
+      expiresAt: expiresInHours(5),
+      mitraId,
     },
     {
       name: "Kopi Susu Gula Aren",
@@ -95,8 +100,8 @@ async function main() {
       storeAddress: "Jl. Riau No. 23, Bandung",
       storeLat: -6.891542,
       storeLng: 107.610532,
-      expiresAt: new Date(Date.now() + 2 * 60 * 60 * 1000),
-      mitraId: mitra.id,
+      expiresAt: expiresInHours(2),
+      mitraId,
     },
     {
       name: "Nasi Goreng Kampung",
@@ -111,8 +116,8 @@ async function main() {
       storeAddress: "Jl. Merdeka No. 12, Bandung",
       storeLat: -6.914744,
       storeLng: 107.60981,
-      expiresAt: new Date(Date.now() + 3 * 60 * 60 * 1000),
-      mitraId: mitra.id,
+      expiresAt: expiresInHours(3),
+      mitraId,
     },
     {
       name: "Roti Keju",
@@ -127,8 +132,8 @@ async function main() {
       storeAddress: "Jl. Braga No. 78, Bandung",
       storeLat: -6.916105,
       storeLng: 107.609536,
-      expiresAt: new Date(Date.now() + 4 * 60 * 60 * 1000),
-      mitraId: mitra.id,
+      expiresAt: expiresInHours(4),
+      mitraId,
     },
     {
       name: "Es Teh Tarik",
@@ -143,8 +148,8 @@ async function main() {
       storeAddress: "Jl. Riau No. 23, Bandung",
       storeLat: -6.891542,
       storeLng: 107.610532,
-      expiresAt: new Date(Date.now() + 2 * 60 * 60 * 1000),
-      mitraId: mitra.id,
+      expiresAt: expiresInHours(2),
+      mitraId,
     },
     {
       name: "Mie Ayam Komplit",
@@ -159,10 +164,17 @@ async function main() {
       storeAddress: "Jl. Cihampelas No. 56, Bandung",
       storeLat: -6.893789,
       storeLng: 107.605432,
-      expiresAt: new Date(Date.now() + 3 * 60 * 60 * 1000),
-      mitraId: mitra.id,
+      expiresAt: expiresInHours(3),
+      mitraId,
     },
   ];
+}
+
+async function seedProducts(mitraId: string) {
+  await prisma.product.deleteMany();
+  console.log("Cleared existing products");
+
+  const products = getDefaultProducts(mitraId);
 
   for (const product of products) {
     const created = await prisma.product.create({ data: product });
@@ -170,6 +182,15 @@ async function main() {
   }
 
   console.log(`\nSeeded ${products.length} products successfully!`);
+}
+
+async function main() {
+  console.log("Seeding database...");
+
+  const mitra = await ensureMitraUser();
+  await seedProducts(mitra.id);
+
+  console.log("Seed complete!");
 }
 
 main()
