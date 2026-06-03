@@ -9,6 +9,8 @@ import { ProductGrid } from '@/components/ProductGrid';
 import { AIRecommendation } from '@/components/AIRecommendation';
 import { FilterBar } from '@/components/FilterBar';
 import { useProducts } from '@/hooks/useProduct';
+import { useGeolocation } from '@/hooks/useGeolocation';
+import { useHasPurchaseHistory } from '@/hooks/useHasPurchaseHistory';
 import type { SortOption } from '@/components/FilterBar';
 import type { FilterValues } from '@/components/FilterModal';
 
@@ -22,16 +24,25 @@ export default function HomePage() {
     maxExpiry: 'Hari Ini',
   });
 
+  const { lat, lng } = useGeolocation();
+  const hasPurchaseHistory = useHasPurchaseHistory();
+
   // Map frontend sort to backend sort param
   const sortParam =
     sortBy === 'price-asc' ? 'price_asc' :
     sortBy === 'price-desc' ? 'price_desc' :
+    sortBy === 'distance-asc' ? 'distance_asc' :
     sortBy === 'remaining-asc' ? 'oldest' :
     undefined;
+
+  const radiusParam = filters.maxDistance < 10 ? filters.maxDistance : undefined;
 
   const { products, loading, error } = useProducts({
     category: selectedCategory !== 'all' ? selectedCategory : undefined,
     sort: sortParam,
+    lat: lat ?? undefined,
+    lng: lng ?? undefined,
+    radius: radiusParam,
   });
 
   const handleSearch = useCallback((query: string) => {
@@ -52,7 +63,18 @@ export default function HomePage() {
             <span className="font-semibold">Makanan Surplus Aman.</span> Setiap produk melewati cek kualitas. Diproduksi hari yang sama dengan standar higienis terjamin.
           </p>
         </div>
-        <AIRecommendation products={products} />
+        {hasPurchaseHistory === true && (
+          <AIRecommendation products={products} />
+        )}
+        {hasPurchaseHistory === undefined && (
+          <div className="mb-6 p-4 rounded-xl bg-gray-50 animate-pulse">
+            <div className="h-4 bg-gray-200 rounded w-48 mb-3" />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="h-32 bg-gray-200 rounded-xl" />
+              <div className="h-32 bg-gray-200 rounded-xl" />
+            </div>
+          </div>
+        )}
         <CategoryFilter selected={selectedCategory} onSelect={setSelectedCategory} />
         <FilterBar
           activeSort={sortBy}

@@ -1,6 +1,6 @@
 'use client';
 
-import { Sparkles, Info } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { getImageUrl, type ProductData } from '@/lib/api/products';
 import { useRouter } from 'next/navigation';
 import { useState, useMemo } from 'react';
@@ -159,7 +159,7 @@ export function AIRecommendation({
 		[products, currentProductId],
 	);
 
-	const displayTitle = title || 'Rekomendasi AI untuk kamu';
+	const displayTitle = title || 'Rekomendasi untuk Kamu';
 
 	if (recommendations.length === 0) return null;
 
@@ -168,8 +168,7 @@ export function AIRecommendation({
 			{/* Header AI */}
 			<div className="flex items-center gap-2 mb-3">
 				<div className="flex items-center gap-1.5 bg-gradient-to-r from-purple-600 to-purple-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-md">
-					<Sparkles className="w-3.5 h-3.5" />
-					<span>AI</span>
+					<span>Rekomendasi</span>
 				</div>
 				<h2 className="font-semibold text-gray-900 text-base sm:text-xl">
 					{displayTitle}
@@ -179,7 +178,7 @@ export function AIRecommendation({
 			{/* Trust indicator */}
 			<div className="text-xs text-gray-500 mb-3 flex items-center gap-1">
 				<span className="inline-block w-2 h-2 rounded-full bg-green-400" />
-				Berdasarkan riwayat & preferensimu
+				Berdasarkan produk yang kamu suka
 			</div>
 
 			{/* Product cards */}

@@ -6,6 +6,7 @@ import {
   getUserOrders,
   getOrderById,
   verifyPickup,
+  hasOrderHistory,
   OrderError,
 } from '../services/orderService.js';
 import { createOrderSchema, verifyPickupSchema } from '../validators/orders.js';
@@ -50,6 +51,16 @@ ordersRouter.get('/', async (req: Request, res: Response, next: NextFunction) =>
   try {
     const orders = await getUserOrders(req.user!.userId);
     res.json({ orders });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /orders/has-history - check if user has any past orders
+ordersRouter.get('/has-history', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const hasHistory = await hasOrderHistory(req.user!.userId);
+    res.json({ hasHistory });
   } catch (err) {
     next(err);
   }

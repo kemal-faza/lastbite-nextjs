@@ -172,6 +172,42 @@ describe('Orders API', () => {
     });
   });
 
+  describe('GET /orders/has-history', () => {
+    it('should return false for user with no orders', async () => {
+      const res = await request(app)
+        .get('/orders/has-history')
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ hasHistory: false });
+    });
+
+    it('should return true for user with at least one order', async () => {
+      // Add item to cart first, then create an order
+      await request(app)
+        .post('/cart')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ productId, quantity: 1 });
+
+      await request(app)
+        .post('/orders')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ buyerName: 'Test User', buyerPhone: '08123456789' });
+
+      const res = await request(app)
+        .get('/orders/has-history')
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ hasHistory: true });
+    });
+
+    it('should return 401 without auth token', async () => {
+      const res = await request(app).get('/orders/has-history');
+      expect(res.status).toBe(401);
+    });
+  });
+
   describe('POST /orders/:id/verify-pickup', () => {
     let orderId: string;
     let pickupCode: string;

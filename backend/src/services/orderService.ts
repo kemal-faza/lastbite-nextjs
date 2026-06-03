@@ -9,6 +9,14 @@ export class OrderError extends Error {
   }
 }
 
+/**
+ * Check if a user has at least one order (any status).
+ */
+export async function hasOrderHistory(userId: string): Promise<boolean> {
+  const count = await prisma.order.count({ where: { userId } });
+  return count > 0;
+}
+
 export interface CreateOrderInput {
   buyerName: string;
   buyerPhone: string;
