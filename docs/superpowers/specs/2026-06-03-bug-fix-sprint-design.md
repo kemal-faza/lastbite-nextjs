@@ -62,17 +62,23 @@ Komponen ini bukan AI sebenarnya — ini adalah scoring rule-based deterministik
 ## Bug 3: Dropdown Select Styling Jelek
 
 ### Root Cause
-Di `src/components/ui/select.tsx` line 44, class `bg-input-background` bukan standard Tailwind CSS class. Tidak ada di konfigurasi project. Akibatnya CSS tidak ter-resolve dan background dropdown tidak tampil sesuai desain.
+Komponen Select saat ini adalah custom wrapper Radix UI yang styling-nya tidak konsisten dengan shadcn/ui standar. Beberapa class dan behavior berbeda dari implementasi referensi.
 
 ### Fix
-Ganti `bg-input-background` menjadi `bg-white` di `SelectTrigger` styling. Review semua class di komponen Select untuk konsistensi.
+**Opsi B — Replace dengan shadcn/ui Select resmi:**
+
+1. Inisialisasi shadcn: `npx shadcn@latest init` — project sudah memiliki CSS variables shadcn-compatible (`--background`, `--foreground`, `--primary`, `--muted`, `--accent`, `--border`, `--input`, `--ring`, `--radius`), Tailwind v4, `tw-animate-css`. Inisialisasi hanya akan membuat `components.json`.
+2. Install komponen Select resmi: `npx shadcn@latest add select` — ini akan menimpa `src/components/ui/select.tsx` dengan versi shadcn standar.
+3. Tidak perlu migrasi import — struktur komponen shadcn Select identik (Select, SelectTrigger, SelectContent, SelectItem, dll).
 
 ### Files Affected
-- `src/components/ui/select.tsx`
+- `components.json` (file baru — hasil init shadcn)
+- `src/components/ui/select.tsx` (replace dengan versi shadcn)
 
 ### Verification
 - Buka halaman yang menggunakan Select (FilterBar, admin settings, dll)
-- Dropdown tampil dengan background putih dan styling yang konsisten
+- Dropdown tampil dengan styling shadcn standar
+- Tidak ada error kompilasi pada existing consumer komponen Select
 
 ---
 
@@ -227,5 +233,6 @@ WAVE 3 (paralel):
 | `src/hooks/useRequireAuth.ts` | 5 | NEW |
 | `src/components/ProductCard.tsx` | 5 | Pakai useRequireAuth |
 | `src/app/(main)/product/[id]/page.tsx` | 5 | Pakai useRequireAuth |
-| `src/components/ui/select.tsx` | 3 | Fix bg-input-background |
+| `components.json` | 3 | NEW: hasil init shadcn |
+| `src/components/ui/select.tsx` | 3 | Replace dengan shadcn Select resmi |
 | `src/app/admin/layout.tsx` | 6 | Hapus client-side guard |
