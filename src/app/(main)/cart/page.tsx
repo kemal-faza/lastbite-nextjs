@@ -1,6 +1,7 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
+import { ImageWithFallback } from '@/components/ImageWithFallback';
 import {
 	MinusIcon,
 	PlusIcon,
@@ -12,12 +13,15 @@ import {
 	CheckIcon,
 	UserIcon,
 	ClipboardTextIcon,
+	SpinnerIcon,
+	CheckCircleIcon,
 } from '@phosphor-icons/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { useCart } from '@/lib/context/CartContext';
 import { useOrders } from '@/lib/context/OrderContext';
+import { toast } from 'sonner';
 
 
 const STEPS = ['Keranjang', 'Konfirmasi'];
@@ -41,6 +45,8 @@ export default function CartPage() {
 	});
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const isSubmittingRef = useRef(false);
+	const [formErrors, setFormErrors] = useState<{ name?: string; phone?: string }>({});
+	const [orderSuccess, setOrderSuccess] = useState(false);
 
 	const totalOriginal = items.reduce(
 		(sum, item) => sum + item.originalPrice * item.quantity,
@@ -51,6 +57,25 @@ export default function CartPage() {
 	const total = subtotal;
 
 	const { createOrder } = useOrders();
+
+	const validateForm = (): boolean => {
+		const errors: { name?: string; phone?: string } = {};
+		if (!paymentInfo.name.trim()) {
+			errors.name = 'Nama wajib diisi';
+		}
+		const phoneDigits = paymentInfo.phone.replace(/\D/g, '');
+		if (phoneDigits.length < 6) {
+			errors.phone = 'Nomor telepon minimal 6 digit';
+		}
+		setFormErrors(errors);
+		return Object.keys(errors).length === 0;
+	};
+
+	const handleProceedToConfirm = () => {
+		if (validateForm()) {
+			setCheckIconoutStep(2);
+		}
+	};
 
 	const handleConfirmOrder = async () => {
 		if (isSubmittingRef.current || items.length === 0) return;
@@ -65,13 +90,35 @@ export default function CartPage() {
 			});
 			if (orderId) {
 				clearCart();
-				router.push('/order/confirm/' + orderId);
+				toast.success('Pesanan berhasil dibuat!');
+				setOrderSuccess(true);
+				setTimeout(() => {
+					router.push('/order/confirm/' + orderId);
+				}, 800);
 			}
 		} finally {
 			isSubmittingRef.current = false;
 			setIsSubmitting(false);
 		}
 	};
+
+	// Order Success State (before empty state, since clearCart() is already called)
+	if (orderSuccess) {
+		return (
+			<div className="flex flex-col items-center justify-center min-h-[80vh] px-4 text-center">
+				<div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6">
+					<CheckCircleIcon className="w-12 h-12 text-green-600" />
+				</div>
+				<h2 className="text-xl font-bold text-gray-900 mb-2">
+					Pesanan Berhasil Dibuat!
+				</h2>
+				<p className="text-gray-500 mb-4 max-w-[250px]">
+					Mengarahkan ke halaman detail pesanan...
+				</p>
+				<SpinnerIcon className="w-6 h-6 text-[var(--primary)] animate-spin" />
+			</div>
+		);
+	}
 
 	// Empty State
 	if (items.length === 0) {
@@ -166,10 +213,11 @@ export default function CartPage() {
 									? ' border-b border-gray-100'
 									: '')
 							}>
-							<img
+							<ImageWithFallback
 								src={item.image}
 								alt={item.name}
-								className="w-20 h-20 object-cover rounded-xl bg-gray-100"
+								className="w-20 h-20 object-cover rounded-xl"
+								containerClassName="w-20 h-20 rounded-xl shrink-0"
 							/>
 							<div className="flex-1 flex flex-col justify-between">
 								<div>
@@ -298,15 +346,19 @@ export default function CartPage() {
 					<input
 						type="text"
 						value={paymentInfo.name}
-						onChange={(e) =>
+						onChange={(e) => {
 							setPaymentInfo((p) => ({
 								...p,
 								name: e.target.value,
-							}))
-						}
+							}));
+							if (formErrors.name) setFormErrors((prev) => ({ ...prev, name: undefined }));
+						}}
 						placeholder="Masukkan namamu"
-						className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent bg-gray-50"
+						className={'w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent bg-gray-50 ' + (formErrors.name ? 'border-red-300' : 'border-gray-200')}
 					/>
+					{formErrors.name && (
+						<p className="text-xs text-red-500 mt-1">{formErrors.name}</p>
+					)}
 				</div>
 				<div>
 					<label className="text-sm font-medium text-gray-700 block mb-1.5">
@@ -315,15 +367,19 @@ export default function CartPage() {
 					<input
 						type="tel"
 						value={paymentInfo.phone}
-						onChange={(e) =>
+						onChange={(e) => {
 							setPaymentInfo((p) => ({
 								...p,
 								phone: e.target.value,
-							}))
-						}
+							}));
+							if (formErrors.phone) setFormErrors((prev) => ({ ...prev, phone: undefined }));
+						}}
 						placeholder="08xxxxxxxxxx"
-						className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent bg-gray-50"
+						className={'w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent bg-gray-50 ' + (formErrors.phone ? 'border-red-300' : 'border-gray-200')}
 					/>
+					{formErrors.phone && (
+						<p className="text-xs text-red-500 mt-1">{formErrors.phone}</p>
+					)}
 				</div>
 				<div>
 					<label className="text-sm font-medium text-gray-700 block mb-2">
@@ -478,14 +534,8 @@ export default function CartPage() {
 			return (
 				<div className="flex gap-3">
 					<button
-						onClick={() => setCheckIconoutStep(2)}
-						disabled={!paymentInfo.name.trim()}
-						className={
-							'flex-1 font-bold py-3.5 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 ' +
-							(paymentInfo.name.trim()
-								? 'bg-[var(--primary)] text-white shadow-black/10 hover:bg-[#0d5254] active:scale-[0.98]'
-								: 'bg-gray-200 text-gray-400 cursor-not-allowed')
-						}>
+						onClick={handleProceedToConfirm}
+						className="flex-1 font-bold py-3.5 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 bg-[var(--primary)] text-white shadow-black/10 hover:bg-[#0d5254] active:scale-[0.98]">
 						Lanjut ke Konfirmasi
 						<ArrowRightIcon className="w-4 h-4" />
 					</button>
@@ -511,7 +561,7 @@ export default function CartPage() {
 								: 'bg-[var(--secondary)] text-white shadow-black/10 hover:bg-[#c9952e]')
 						}>
 						<CheckIcon className="w-5 h-5" />
-						{isSubmitting ? 'Memproses...' : 'Konfirmasi Pesanan'}
+						{isSubmitting ? 'Membuat Pesanan...' : 'Konfirmasi Pesanan'}
 					</button>
 				</div>
 			);

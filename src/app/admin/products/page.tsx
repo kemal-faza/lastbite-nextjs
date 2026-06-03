@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MagnifyingGlassIcon, EyeIcon, EyeClosedIcon } from '@phosphor-icons/react';
 
 const formatPrice = (price: number) =>
@@ -61,15 +62,22 @@ export default function ProductsPage() {
             className="pl-9"
           />
         </div>
-        <select
+        <Select
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3 py-2 border rounded-md text-sm"
+          onValueChange={(val) => setStatusFilter(val || 'all')}
         >
-          <option value="all">Semua Status</option>
-          <option value="active">Aktif</option>
-          <option value="inactive">Nonaktif</option>
-        </select>
+          <SelectTrigger className="w-44 bg-accent min-h-full">
+            <SelectValue placeholder="Semua Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel>Filter Status</SelectLabel>
+              <SelectItem value="all">Semua Status</SelectItem>
+              <SelectItem value="active">Aktif</SelectItem>
+              <SelectItem value="inactive">Nonaktif</SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
       </div>
 
       {loading ? (

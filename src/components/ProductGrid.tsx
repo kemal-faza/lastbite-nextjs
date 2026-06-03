@@ -43,7 +43,7 @@ export function ProductGrid({ products, loading, error }: ProductGridProps) {
       <div className="flex items-center justify-between mb-3">
         <h2 className="font-semibold text-gray-900">{products.length} Produk Tersedia</h2>
       </div>
-      <div className="grid grid-cols-1 gap-4 pb-12">
+      <div className="grid grid-cols-1 gap-3 pb-12">
         {products.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}

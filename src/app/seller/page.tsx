@@ -1,8 +1,8 @@
 'use client';
 
-import { ArrowLeftIcon, StorefrontIcon, PackageIcon, PlusIcon, ArrowSquareOutIcon, SpinnerIcon, ChartBarIcon, SquaresFourIcon } from '@phosphor-icons/react';
+import { ArrowLeftIcon, StorefrontIcon, PackageIcon, PlusIcon, ArrowSquareOutIcon, SpinnerIcon, ChartBarIcon, SquaresFourIcon, PencilIcon } from '@phosphor-icons/react';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { getMitraProfile, fetchMitraStats, fetchMitraProducts, type MitraProfile, type MitraStats } from '@/lib/api/mitra';
 import type { ProductData } from '@/lib/api/products';
 import { fetchSalesTrend, fetchRevenueSummary, fetchProductPerformance, fetchPeakHours } from '@/lib/api/analytics';
@@ -25,6 +25,7 @@ export default function SellerDashboardPage() {
   const [stats, setStats] = useState<MitraStats | null>(null);
   const [products, setProducts] = useState<ProductData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('overview');
 
   // Analytics state
@@ -41,17 +42,32 @@ export default function SellerDashboardPage() {
   const [peakHours, setPeakHours] = useState<PeakHourEntry[]>([]);
 
   const loadData = async () => {
+    setLoadError(null);
     try {
       const [profileRes, statsRes, productsRes] = await Promise.all([
-        getMitraProfile().catch(() => null),
+        getMitraProfile().catch((err: any) => {
+          // MITRA_NOT_FOUND (404) = user is not registered as mitra
+          if (err?.code === 'MITRA_NOT_FOUND') return null;
+          // Other errors (network, auth, etc.)
+          throw err;
+        }),
         fetchMitraStats().catch(() => null),
         fetchMitraProducts().catch(() => ({ products: [] as ProductData[] })),
       ]);
-      setProfile(profileRes?.profile ?? null);
+      const hasProfile = profileRes?.profile ?? null;
+      const productList = productsRes.products;
+      setProfile(hasProfile);
       setStats(statsRes?.stats ?? null);
-      setProducts(productsRes.products);
-    } catch {
-      // Not a mitra
+      setProducts(productList);
+
+      // Defense: profile null tapi ada produk → mitra valid, coba fetch stats ulang
+      if (!hasProfile && productList.length > 0) {
+        fetchMitraStats().then(r => setStats(r?.stats ?? null)).catch(() => null);
+      }
+    } catch (err: any) {
+      console.error('Failed to load seller data:', err);
+      setLoadError(err?.message || 'Gagal memuat data. Silakan coba lagi.');
+      setProfile(null);
     } finally {
       setLoading(false);
     }
@@ -95,10 +111,90 @@ export default function SellerDashboardPage() {
     }
   }, [activeTab, dateRange, profile, loadAnalytics]);
 
+  // Polling: refresh stats every 30s when on overview tab
+  const prevActiveOrders = useRef<number | null>(null);
+  useEffect(() => {
+    if (activeTab !== 'overview' || !profile) return;
+    const interval = setInterval(async () => {
+      try {
+        const statsRes = await fetchMitraStats().catch(() => null);
+        if (statsRes?.stats) {
+          prevActiveOrders.current = statsRes.stats.activeOrders;
+          setStats(statsRes.stats);
+        }
+      } catch {
+        // silent
+      }
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [activeTab, profile]);
+
   if (loading) {
     return (
       <div className="size-full flex items-center justify-center bg-[var(--background)]">
         <SpinnerIcon className="w-6 h-6 animate-spin text-[var(--primary)]" />
+      </div>
+    );
+  }
+
+  // Error state - API failure
+  if (loadError) {
+    return (
+      <div className="size-full flex flex-col bg-[var(--background)] overflow-hidden relative max-w-md mx-auto min-h-[100dvh] shadow-xl">
+        <header className="bg-[var(--primary)] text-white px-4 py-4 shadow-md">
+          <div className="flex items-center gap-3">
+            <button onClick={() => router.push('/profile')} className="p-1.5 -ml-1.5 hover:bg-white/20 rounded-xl transition-all flex items-center justify-center text-white" aria-label="Kembali ke Mode Pembeli">
+              <ArrowLeftIcon className="w-5 h-5" />
+            </button>
+            <h1 className="flex-1 text-base font-bold text-center">Dashboard Mitra</h1>
+            <StorefrontIcon className="w-5 h-5 text-white/80" />
+          </div>
+        </header>
+        <div className="flex-1 flex flex-col items-center justify-center px-6 pb-20 text-center">
+          <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4">
+            <StorefrontIcon className="w-8 h-8 text-red-500" />
+          </div>
+          <h2 className="text-lg font-bold text-gray-800 mb-2">Gagal Memuat Data</h2>
+          <p className="text-sm text-gray-500 mb-6 leading-relaxed max-w-xs">{loadError}</p>
+          <button
+            onClick={() => { setLoading(true); loadData(); }}
+            className="bg-[var(--primary)] text-white font-semibold px-8 py-3 rounded-2xl hover:bg-[var(--primary)]/90 transition-colors shadow-sm"
+          >
+            Coba Lagi
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Profile null tapi ada produk → mitra valid, API profile bermasalah
+  if (!profile && products.length > 0) {
+    return (
+      <div className="size-full flex flex-col bg-[var(--background)] overflow-hidden relative max-w-md mx-auto min-h-[100dvh] shadow-xl">
+        <header className="bg-[var(--primary)] text-white px-4 py-4 shadow-md">
+          <div className="flex items-center gap-3">
+            <button onClick={() => router.push('/profile')} className="p-1.5 -ml-1.5 hover:bg-white/20 rounded-xl transition-all flex items-center justify-center text-white" aria-label="Kembali ke Mode Pembeli">
+              <ArrowLeftIcon className="w-5 h-5" />
+            </button>
+            <h1 className="flex-1 text-base font-bold text-center">Dashboard Mitra</h1>
+            <StorefrontIcon className="w-5 h-5 text-white/80" />
+          </div>
+        </header>
+        <div className="flex-1 flex flex-col items-center justify-center px-6 pb-20 text-center">
+          <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mb-4">
+            <StorefrontIcon className="w-8 h-8 text-amber-600" />
+          </div>
+          <h2 className="text-lg font-bold text-gray-800 mb-2">Data Mitra Tidak Lengkap</h2>
+          <p className="text-sm text-gray-500 mb-6 leading-relaxed max-w-xs">
+            Profil mitra tidak ditemukan meskipun kamu memiliki produk. Silakan hubungi admin.
+          </p>
+          <button
+            onClick={() => { setLoading(true); loadData(); }}
+            className="bg-[var(--primary)] text-white font-semibold px-8 py-3 rounded-2xl hover:bg-[var(--primary)]/90 transition-colors shadow-sm"
+          >
+            Coba Lagi
+          </button>
+        </div>
       </div>
     );
   }
@@ -189,19 +285,74 @@ export default function SellerDashboardPage() {
                 <h2 className="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">
                   Ringkasan Hari Ini
                 </h2>
-                <DashboardStatCards stats={stats} />
-                {stats.activeOrders > 0 && (
-                  <button
-                    onClick={() => router.push('/seller/orders')}
-                    className="mt-3 w-full bg-[var(--secondary)]/10 text-[var(--secondary)] font-medium text-sm px-4 py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-[var(--secondary)]/20 transition-colors"
-                  >
-                    <PackageIcon className="w-4 h-4" />
-                    {stats.activeOrders} Pesanan Masuk
-                    <ArrowSquareOutIcon className="w-3.5 h-3.5" />
-                  </button>
-                )}
+                <DashboardStatCards stats={stats} onCardClick={(key) => {
+                  if (key === 'totalSold') {
+                    setActiveTab('analytics');
+                    router.push('/seller');
+                  } else {
+                    document.getElementById('seller-products-section')?.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }} />
+                <button
+                  onClick={() => router.push('/seller/orders')}
+                  className="mt-3 w-full bg-[var(--secondary)]/10 text-[var(--secondary)] font-medium text-sm px-4 py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-[var(--secondary)]/20 transition-colors relative"
+                >
+                  <PackageIcon className="w-4 h-4" />
+                  {stats.activeOrders > 0 ? `${stats.activeOrders} Pesanan Masuk` : 'Lihat Pesanan'}
+                  <ArrowSquareOutIcon className="w-3.5 h-3.5" />
+                  {stats.activeOrders > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm">
+                      {stats.activeOrders > 9 ? '9+' : stats.activeOrders}
+                    </span>
+                  )}
+                </button>
               </section>
             )}
+
+            {/* Aksi Cepat */}
+            <section>
+              <h2 className="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">
+                Aksi Cepat
+              </h2>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => router.push('/seller/add')}
+                  className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col items-center gap-2"
+                >
+                  <div className="w-10 h-10 bg-[var(--primary)]/10 rounded-xl flex items-center justify-center">
+                    <PlusIcon className="w-5 h-5 text-[var(--primary)]" />
+                  </div>
+                  <span className="text-xs font-medium text-gray-700">Tambah Produk</span>
+                </button>
+                <button
+                  onClick={() => router.push('/seller/orders')}
+                  className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col items-center gap-2"
+                >
+                  <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center">
+                    <PackageIcon className="w-5 h-5 text-amber-600" />
+                  </div>
+                  <span className="text-xs font-medium text-gray-700">Pesanan Masuk</span>
+                </button>
+                <button
+                  onClick={() => router.push('/seller')}
+                  className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col items-center gap-2"
+                >
+                  <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center">
+                    <ChartBarIcon className="w-5 h-5 text-green-600" />
+                  </div>
+                  <span className="text-xs font-medium text-gray-700">Lihat Analitik</span>
+                </button>
+                <button
+                  onClick={() => router.push('/profile')}
+                  className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col items-center gap-2"
+                >
+                  <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center">
+                    <PencilIcon className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <span className="text-xs font-medium text-gray-700">Edit Profil</span>
+                </button>
+              </div>
+            </section>
 
             <div className="bg-gradient-to-r from-green-50 to-teal-50 rounded-2xl p-4 border border-green-100">
               <div className="flex items-start gap-3">
@@ -219,7 +370,7 @@ export default function SellerDashboardPage() {
               </div>
             </div>
 
-            <section>
+            <section id="seller-products-section">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-semibold text-gray-600 uppercase tracking-wider">
                   Produk ({stats?.productCount ?? products.length})

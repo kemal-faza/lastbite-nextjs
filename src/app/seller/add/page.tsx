@@ -5,6 +5,7 @@ import { ArrowLeftIcon, CameraIcon, UploadIcon, XIcon, SpinnerIcon } from '@phos
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { createProduct, uploadImage } from '@/lib/api/products';
 
 const CATEGORIES = [
@@ -123,15 +124,20 @@ export default function AddProductPage() {
             <label className="text-sm font-medium text-gray-700">
               Kategori <span className="text-[var(--destructive)]">*</span>
             </label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="flex h-9 w-full min-w-0 rounded-md border border-input bg-input-background px-3 py-1 text-base transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] md:text-sm"
-            >
-              {CATEGORIES.map((cat) => (
-                <option key={cat.value} value={cat.value}>{cat.label}</option>
-              ))}
-            </select>
+            <Select value={category} onValueChange={(val) => { if (val && val !== 'placeholder') setCategory(val); }}>
+              <SelectTrigger className="w-full bg-accent min-h-full">
+                <SelectValue placeholder="Pilih kategori" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Kategori</SelectLabel>
+                  <SelectItem value="placeholder" disabled>Pilih kategori</SelectItem>
+                  {CATEGORIES.map((cat) => (
+                    <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

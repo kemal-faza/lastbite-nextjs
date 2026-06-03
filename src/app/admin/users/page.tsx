@@ -76,15 +76,13 @@ export default function UsersPage() {
 				</div>
 				<Select
 					value={roleFilter || 'all'}
-					onValueChange={(val) =>
-						setRoleFilter(val === 'all' ? '' : (val ?? ''))
-					}>
-					<SelectTrigger className="w-[180px]">
+					onValueChange={(val) => setRoleFilter(val === 'all' ? '' : (val ?? ''))}>
+					<SelectTrigger className="w-45 bg-accent min-h-full">
 						<SelectValue placeholder="Semua Role" />
 					</SelectTrigger>
 					<SelectContent>
 						<SelectGroup>
-							{/* <SelectLabel>Fruits</SelectLabel> */}
+							<SelectLabel>Filter Role</SelectLabel>
 							<SelectItem value="all">Semua Role</SelectItem>
 							<SelectItem value="FOOD_SAVER">
 								Food Saver
