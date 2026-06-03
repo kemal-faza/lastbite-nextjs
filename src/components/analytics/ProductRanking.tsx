@@ -1,7 +1,7 @@
 'use client';
 
 import type { ProductPerformanceEntry } from '@/lib/api/analytics';
-import { Package } from 'lucide-react';
+import { PackageIcon } from '@phosphor-icons/react';
 
 interface Props {
   data: ProductPerformanceEntry[];
@@ -42,7 +42,7 @@ export default function ProductRanking({ data, loading }: Props) {
   if (data.length === 0) {
     return (
       <div className="bg-white rounded-2xl shadow-sm p-6 text-center">
-        <Package className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+        <PackageIcon className="w-10 h-10 text-gray-300 mx-auto mb-3" />
         <h3 className="text-sm font-medium text-gray-600">Belum Ada Penjualan</h3>
         <p className="text-xs text-gray-400 mt-1">Data performa produk akan muncul setelah ada pesanan.</p>
       </div>

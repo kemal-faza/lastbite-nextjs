@@ -2,17 +2,17 @@
 
 import { useRef, useState } from 'react';
 import {
-	Minus,
-	Plus,
-	Trash2,
-	ShoppingBag,
-	Tag,
-	ArrowRight,
-	ChevronLeft,
-	Check,
-	User,
-	ClipboardList,
-} from 'lucide-react';
+	MinusIcon,
+	PlusIcon,
+	TrashIcon,
+	ShoppingBagIcon,
+	TagIcon,
+	ArrowRightIcon,
+	CaretLeftIcon,
+	CheckIcon,
+	UserIcon,
+	ClipboardTextIcon,
+} from '@phosphor-icons/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
@@ -33,7 +33,7 @@ export default function CartPage() {
 		subtotal,
 	} = useCart();
 	const router = useRouter();
-	const [checkoutStep, setCheckoutStep] = useState(1);
+	const [checkoutStep, setCheckIconoutStep] = useState(1);
 	const [paymentInfo, setPaymentInfo] = useState({
 		name: '',
 		phone: '',
@@ -78,7 +78,7 @@ export default function CartPage() {
 		return (
 			<div className="flex flex-col items-center justify-center min-h-[80vh] px-4 text-center">
 				<div className="w-24 h-24 bg-[var(--primary)]/10 rounded-full flex items-center justify-center mb-6">
-					<ShoppingBag className="w-12 h-12 text-[var(--secondary)]" />
+					<ShoppingBagIcon className="w-12 h-12 text-[var(--secondary)]" />
 				</div>
 				<h2 className="text-xl font-bold text-gray-900 mb-2">
 					Keranjang Kosong
@@ -118,7 +118,7 @@ export default function CartPage() {
 												: 'bg-gray-100 text-gray-400')
 									}>
 									{isDone ? (
-										<Check className="w-4 h-4" />
+										<CheckIcon className="w-4 h-4" />
 									) : (
 										stepNum
 									)}
@@ -186,7 +186,7 @@ export default function CartPage() {
 											onClick={() => removeItem(item.productId)}
 											className="p-1 -mr-1 hover:bg-red-50 rounded-lg transition-colors"
 											aria-label={'Hapus ' + item.name}>
-											<Trash2 className="w-4 h-4 text-red-400 hover:text-red-600" />
+											<TrashIcon className="w-4 h-4 text-red-400 hover:text-red-600" />
 										</button>
 									</div>
 								</div>
@@ -210,7 +210,7 @@ export default function CartPage() {
 												}
 												className="w-7 h-7 rounded-full bg-white flex items-center justify-center shadow-sm text-gray-600 active:scale-95 transition-transform hover:shadow-md"
 												aria-label="Kurangi jumlah">
-												<Minus className="w-3 h-3" />
+												<MinusIcon className="w-3 h-3" />
 											</button>
 											<span className="text-sm font-semibold w-5 text-center">
 												{item.quantity}
@@ -227,7 +227,7 @@ export default function CartPage() {
 														: 'text-[var(--secondary)] active:scale-95 hover:shadow-md')
 												}
 												aria-label="Tambah jumlah">
-												<Plus className="w-3 h-3" />
+												<PlusIcon className="w-3 h-3" />
 											</button>
 										</div>
 										{isMaxStockReached && (
@@ -268,7 +268,7 @@ export default function CartPage() {
 
 			<div className="bg-[var(--primary)]/5 rounded-xl p-3 flex items-start gap-3 border border-[var(--primary)]/10">
 				<div className="bg-[var(--primary)]/10 p-1.5 rounded-full mt-0.5">
-					<Tag className="w-4 h-4 text-[var(--primary)]" />
+					<TagIcon className="w-4 h-4 text-[var(--primary)]" />
 				</div>
 				<div>
 					<h4 className="text-sm font-semibold text-[var(--primary)]">
@@ -288,7 +288,7 @@ export default function CartPage() {
 		<div className="p-4 space-y-4">
 			<div className="bg-white rounded-2xl shadow-sm p-4 space-y-4 border border-gray-100">
 				<h3 className="font-semibold text-gray-900 flex items-center gap-2">
-					<User className="w-4 h-4 text-[var(--primary)]" />
+					<UserIcon className="w-4 h-4 text-[var(--primary)]" />
 					Informasi Pemesan
 				</h3>
 				<div>
@@ -359,7 +359,7 @@ export default function CartPage() {
 
 			<div className="bg-white rounded-2xl shadow-sm p-4 border border-gray-100">
 				<h3 className="font-semibold text-gray-900 flex items-center gap-2 mb-3">
-					<ClipboardList className="w-4 h-4 text-[var(--primary)]" />
+					<ClipboardTextIcon className="w-4 h-4 text-[var(--primary)]" />
 					Ringkasan Pesanan
 				</h3>
 				<div className="text-sm space-y-2">
@@ -478,7 +478,7 @@ export default function CartPage() {
 			return (
 				<div className="flex gap-3">
 					<button
-						onClick={() => setCheckoutStep(2)}
+						onClick={() => setCheckIconoutStep(2)}
 						disabled={!paymentInfo.name.trim()}
 						className={
 							'flex-1 font-bold py-3.5 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 ' +
@@ -487,7 +487,7 @@ export default function CartPage() {
 								: 'bg-gray-200 text-gray-400 cursor-not-allowed')
 						}>
 						Lanjut ke Konfirmasi
-						<ArrowRight className="w-4 h-4" />
+						<ArrowRightIcon className="w-4 h-4" />
 					</button>
 				</div>
 			);
@@ -496,9 +496,9 @@ export default function CartPage() {
 			return (
 				<div className="flex gap-3">
 					<button
-						onClick={() => setCheckoutStep(1)}
+						onClick={() => setCheckIconoutStep(1)}
 						className="flex-1 border-2 border-gray-200 text-gray-700 font-semibold py-3.5 px-4 rounded-xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2">
-						<ChevronLeft className="w-4 h-4" />
+						<CaretLeftIcon className="w-4 h-4" />
 						Kembali
 					</button>
 					<button
@@ -510,7 +510,7 @@ export default function CartPage() {
 								? 'bg-gray-300 text-gray-600 cursor-not-allowed shadow-none'
 								: 'bg-[var(--secondary)] text-white shadow-black/10 hover:bg-[#c9952e]')
 						}>
-						<Check className="w-5 h-5" />
+						<CheckIcon className="w-5 h-5" />
 						{isSubmitting ? 'Memproses...' : 'Konfirmasi Pesanan'}
 					</button>
 				</div>
@@ -526,10 +526,10 @@ export default function CartPage() {
 				<div className="px-4 py-4 flex items-center gap-3">
 					{checkoutStep > 1 ? (
 						<button
-							onClick={() => setCheckoutStep(checkoutStep - 1)}
+							onClick={() => setCheckIconoutStep(checkoutStep - 1)}
 							className="p-1 -ml-1 hover:bg-gray-100 rounded-lg transition-colors"
 							aria-label="Kembali">
-							<ChevronLeft className="w-5 h-5 text-gray-700" />
+							<CaretLeftIcon className="w-5 h-5 text-gray-700" />
 						</button>
 					) : null}
 					<h1 className="text-lg font-bold text-gray-900">

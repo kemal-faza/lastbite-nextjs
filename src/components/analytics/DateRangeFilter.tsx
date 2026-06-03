@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { CalendarDays } from 'lucide-react';
+import { CalendarDotsIcon } from '@phosphor-icons/react';
 import { format, subDays, startOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 
 interface DateRange {
@@ -31,7 +31,7 @@ export default function DateRangeFilter({ value, onChange }: Props) {
         onClick={() => setShowPresets(!showPresets)}
         className="flex items-center gap-2 px-3 py-2 bg-white rounded-xl border border-gray-200 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
       >
-        <CalendarDays className="w-4 h-4 text-[var(--primary)]" />
+        <CalendarDotsIcon className="w-4 h-4 text-[var(--primary)]" />
         <span>
           {format(value.from, 'dd/MM')} - {format(value.to, 'dd/MM/yy')}
         </span>

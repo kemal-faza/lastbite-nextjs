@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { Save } from 'lucide-react';
+import { FloppyDiskIcon } from '@phosphor-icons/react';
 
 export default function SettingsPage() {
   const [config, setConfig] = useState<PlatformConfig | null>(null);
@@ -147,7 +147,7 @@ export default function SettingsPage() {
         </Card>
 
         <Button onClick={handleSave} disabled={saving} className="bg-[#11676a] hover:bg-[#0d5456]">
-          <Save size={16} className="mr-2" />
+          <FloppyDiskIcon size={16} className="mr-2" />
           {saving ? 'Menyimpan...' : 'Simpan Pengaturan'}
         </Button>
       </div>

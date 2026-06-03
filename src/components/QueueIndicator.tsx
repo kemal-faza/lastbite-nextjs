@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Users, Clock } from 'lucide-react';
+import { UsersIcon, ClockIcon } from '@phosphor-icons/react';
 
 interface QueueIndicatorProps {
 	initialQueue?: number;
@@ -36,7 +36,7 @@ export function QueueIndicator({
 			<div className="flex items-center justify-between">
 				<div className="flex items-center gap-3">
 					<div className="w-10 h-10 bg-[var(--secondary)]/10 rounded-full flex items-center justify-center relative">
-						<Users className="w-5 h-5 text-[var(--secondary)]" />
+						<UsersIcon className="w-5 h-5 text-[var(--secondary)]" />
 						<AnimatePresence mode="popLayout">
 							<motion.span
 								key={currentQueue}
@@ -60,7 +60,7 @@ export function QueueIndicator({
 				</div>
 				<div className="text-right">
 					<div className="flex items-center gap-1 text-[var(--destructive)]">
-						<Clock className="w-3.5 h-3.5" />
+						<ClockIcon className="w-3.5 h-3.5" />
 						<span className="text-sm font-bold">
 							{estimatedTime} menit
 						</span>

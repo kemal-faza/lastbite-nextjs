@@ -5,23 +5,23 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useState } from 'react';
 import Link from 'next/link';
 import {
-  LayoutDashboard,
-  Users,
-  Store,
-  Package,
-  Settings,
-  ShieldCheck,
-  LogOut,
-  Menu,
-  X,
-} from 'lucide-react';
+  SquaresFourIcon,
+  UsersIcon,
+  StorefrontIcon,
+  PackageIcon,
+  GearIcon,
+  ShieldCheckIcon,
+  SignOutIcon,
+  ListIcon,
+  XIcon,
+} from '@phosphor-icons/react';
 
 const navItems = [
-  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/mitra-verification', label: 'Verifikasi Mitra', icon: ShieldCheck },
-  { href: '/admin/users', label: 'Pengguna', icon: Users },
-  { href: '/admin/products', label: 'Produk', icon: Package },
-  { href: '/admin/settings', label: 'Pengaturan', icon: Settings },
+  { href: '/admin', label: 'Dashboard', icon: SquaresFourIcon },
+  { href: '/admin/mitra-verification', label: 'Verifikasi Mitra', icon: ShieldCheckIcon },
+  { href: '/admin/users', label: 'Pengguna', icon: UsersIcon },
+  { href: '/admin/products', label: 'Produk', icon: PackageIcon },
+  { href: '/admin/settings', label: 'Pengaturan', icon: GearIcon },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -40,12 +40,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen bg-[#e4dcca] flex">
-      <button
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-md shadow"
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-      >
-        {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
-      </button>
+      {/* Menu button: open sidebar, visible only when closed on mobile */}
+      {!sidebarOpen && (
+        <button
+          className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-md shadow"
+          onClick={() => setSidebarOpen(true)}
+          aria-label="Buka sidebar"
+        >
+          <ListIcon size={20} />
+        </button>
+      )}
 
       <aside
         className={`fixed inset-y-0 left-0 z-40 w-64 bg-[#11676a] text-white transform transition-transform duration-200 lg:translate-x-0 lg:static ${
@@ -53,7 +57,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         }`}
       >
         <div className="p-6">
-          <h1 className="text-xl font-bold">LastBite Admin</h1>
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl font-bold">LastBite Admin</h1>
+            <button
+              className="lg:hidden p-1 -mr-1 rounded hover:bg-white/10 transition-colors"
+              onClick={() => setSidebarOpen(false)}
+              aria-label="Tutup sidebar"
+            >
+              <XIcon size={20} />
+            </button>
+          </div>
           <p className="text-sm text-white/70 mt-1">{user?.name}</p>
         </div>
         <nav className="px-4 space-y-1">
@@ -81,7 +94,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             onClick={() => { logout(); router.push('/login'); }}
             className="flex items-center gap-2 w-full px-3 py-2 text-sm text-white/80 hover:text-white transition-colors"
           >
-            <LogOut size={18} />
+            <SignOutIcon size={18} />
             Keluar
           </button>
         </div>

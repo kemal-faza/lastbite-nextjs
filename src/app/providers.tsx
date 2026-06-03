@@ -5,6 +5,7 @@ import { CartProvider } from '@/lib/context/CartContext';
 import { WishlistProvider } from '@/lib/context/WishlistContext';
 import { OrderProvider } from '@/lib/context/OrderContext';
 import { AuthProvider } from '@/lib/context/AuthContext';
+import { GoogleMapsProvider } from '@/components/GoogleMapsProvider';
 import type { ReactNode } from 'react';
 
 export function Providers({ children }: { children: ReactNode }) {
@@ -14,7 +15,9 @@ export function Providers({ children }: { children: ReactNode }) {
         <CartProvider>
           <WishlistProvider>
             <OrderProvider>
-              {children}
+              <GoogleMapsProvider>
+                {children}
+              </GoogleMapsProvider>
             </OrderProvider>
           </WishlistProvider>
         </CartProvider>

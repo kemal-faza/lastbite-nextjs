@@ -1,6 +1,6 @@
 'use client';
 
-import { Clock, CheckCircle, Package, ChevronRight, ShoppingBag, ArrowLeft } from 'lucide-react';
+import { ClockIcon, CheckCircleIcon, PackageIcon, CaretRightIcon, ShoppingBagIcon, ArrowLeftIcon } from '@phosphor-icons/react';
 import { useRouter } from 'next/navigation';
 import { useOrders } from '@/lib/context/OrderContext';
 
@@ -18,7 +18,7 @@ export default function OrdersPage() {
           className="p-1 -ml-1 hover:bg-gray-100 rounded-lg transition-colors"
           aria-label="Kembali ke Profil"
         >
-          <ArrowLeft className="w-5 h-5 text-gray-700" />
+          <ArrowLeftIcon className="w-5 h-5 text-gray-700" />
         </button>
         <h1 className="text-lg font-bold text-gray-900">Pesanan Saya</h1>
         {pendingOrders.length > 0 && (
@@ -53,7 +53,7 @@ export default function OrdersPage() {
                 <div className="text-sm text-gray-500 space-y-1">
                   {order.items.slice(0, 3).map((item) => (
                     <div key={item.id} className="flex items-center gap-2">
-                      <ShoppingBag className="w-3 h-3 text-gray-400 shrink-0" />
+                      <ShoppingBagIcon className="w-3 h-3 text-gray-400 shrink-0" />
                       <span>{item.quantity}x {item.name}</span>
                     </div>
                   ))}
@@ -76,14 +76,14 @@ export default function OrdersPage() {
                     onClick={() => router.push('/order/confirm/' + order.id)}
                     className="w-full py-3 bg-[var(--primary)] text-white text-sm font-semibold rounded-xl hover:bg-[#0d5254] transition-colors active:scale-[0.98] flex items-center justify-center gap-2"
                   >
-                    <Clock className="w-4 h-4" />
+                    <ClockIcon className="w-4 h-4" />
                     Ambil Pesanan
-                    <ChevronRight className="w-4 h-4" />
+                    <CaretRightIcon className="w-4 h-4" />
                   </button>
                 )}
                 {!isPending && (
                   <div className="flex items-center gap-1.5 text-green-600 text-xs justify-center pt-1">
-                    <CheckCircle className="w-3.5 h-3.5" />
+                    <CheckCircleIcon className="w-3.5 h-3.5" />
                     <span>Sudah diambil</span>
                   </div>
                 )}
@@ -92,7 +92,7 @@ export default function OrdersPage() {
           })
         ) : (
           <div className="text-center py-12">
-            <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+            <PackageIcon className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500 font-medium mb-1">Belum ada pesanan</p>
             <p className="text-gray-400 text-sm">
               Pesanan yang sudah dikonfirmasi akan muncul di sini

@@ -3,18 +3,18 @@
 import { useEffect, useState } from 'react';
 import { getAdminDashboard, type AdminDashboardStats } from '@/lib/api/admin';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Store, ShoppingBag, DollarSign, ShieldCheck, Package } from 'lucide-react';
+import { UsersIcon, StorefrontIcon, ShoppingBagIcon, CurrencyDollarIcon, ShieldCheckIcon, PackageIcon } from '@phosphor-icons/react';
 
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(amount);
 
 const statCards = [
-  { key: 'totalUsers' as const, label: 'Food Saver', icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
-  { key: 'totalMitra' as const, label: 'Mitra', icon: Store, color: 'text-[#dda63a]', bg: 'bg-amber-50' },
-  { key: 'activeProducts' as const, label: 'Produk Aktif', icon: Package, color: 'text-green-600', bg: 'bg-green-50' },
-  { key: 'totalOrders' as const, label: 'Total Pesanan', icon: ShoppingBag, color: 'text-purple-600', bg: 'bg-purple-50' },
-  { key: 'totalRevenue' as const, label: 'Pendapatan', icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50', format: formatCurrency },
-  { key: 'pendingVerifications' as const, label: 'Verifikasi Pending', icon: ShieldCheck, color: 'text-orange-600', bg: 'bg-orange-50' },
+  { key: 'totalUsers' as const, label: 'Food Saver', icon: UsersIcon, color: 'text-blue-600', bg: 'bg-blue-50' },
+  { key: 'totalMitra' as const, label: 'Mitra', icon: StorefrontIcon, color: 'text-[#dda63a]', bg: 'bg-amber-50' },
+  { key: 'activeProducts' as const, label: 'Produk Aktif', icon: PackageIcon, color: 'text-green-600', bg: 'bg-green-50' },
+  { key: 'totalOrders' as const, label: 'Total Pesanan', icon: ShoppingBagIcon, color: 'text-purple-600', bg: 'bg-purple-50' },
+  { key: 'totalRevenue' as const, label: 'Pendapatan', icon: CurrencyDollarIcon, color: 'text-emerald-600', bg: 'bg-emerald-50', format: formatCurrency },
+  { key: 'pendingVerifications' as const, label: 'Verifikasi Pending', icon: ShieldCheckIcon, color: 'text-orange-600', bg: 'bg-orange-50' },
 ];
 
 export default function AdminDashboardPage() {

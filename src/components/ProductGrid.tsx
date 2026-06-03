@@ -1,5 +1,5 @@
 import { ProductCard } from './ProductCard';
-import { AlertCircle } from 'lucide-react';
+import { WarningCircleIcon } from '@phosphor-icons/react';
 import type { ProductData } from '@/lib/api/products';
 
 interface ProductGridProps {
@@ -32,7 +32,7 @@ export function ProductGrid({ products, loading, error }: ProductGridProps) {
   if (error) {
     return (
       <div className="text-center py-12">
-        <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-3" />
+        <WarningCircleIcon className="w-12 h-12 text-red-400 mx-auto mb-3" />
         <p className="text-gray-500">{error}</p>
       </div>
     );

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Search as SearchIcon, Clock, TrendingUp, X } from 'lucide-react';
+import { MagnifyingGlassIcon, ClockIcon, TrendUpIcon, XIcon } from '@phosphor-icons/react';
 import { useProductSearch } from '@/hooks/useProductSearch';
 import { ProductCard } from '@/components/ProductCard';
 
@@ -48,7 +48,7 @@ export default function SearchPage() {
       <div className="sticky top-0 z-10 bg-white pb-3 px-4 pt-3 border-b border-gray-100">
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <SearchIcon className="h-5 w-5 text-gray-400" />
+            <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
           </div>
           <input
             type="text"
@@ -62,7 +62,7 @@ export default function SearchPage() {
             <button
               className="absolute inset-y-0 right-0 pr-3 flex items-center"
               onClick={() => setQuery('')}>
-              <X className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+              <XIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
             </button>
           )}
         </div>
@@ -95,7 +95,7 @@ export default function SearchPage() {
                         onClick={() =>
                           handleSearch(item)
                         }>
-                        <Clock className="w-4 h-4 text-gray-400" />
+                        <ClockIcon className="w-4 h-4 text-gray-400" />
                         <span className="text-sm text-gray-700">
                           {item}
                         </span>
@@ -105,7 +105,7 @@ export default function SearchPage() {
                           removeRecent(item)
                         }
                         className="p-1">
-                        <X className="w-4 h-4 text-gray-300 hover:text-gray-500" />
+                        <XIcon className="w-4 h-4 text-gray-300 hover:text-gray-500" />
                       </button>
                     </div>
                   ))}
@@ -116,7 +116,7 @@ export default function SearchPage() {
             {/* Trending Searches */}
             <section>
               <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-green-500" />
+                <TrendUpIcon className="w-4 h-4 text-green-500" />
                 Populer Saat Ini
               </h2>
               <div className="flex flex-wrap gap-2">
@@ -147,7 +147,7 @@ export default function SearchPage() {
         ) : error ? (
           <div className="text-center py-12 mt-10">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 mb-4">
-              <X className="w-8 h-8 text-red-400" />
+              <XIcon className="w-8 h-8 text-red-400" />
             </div>
             <h3 className="text-base font-medium text-gray-900 mb-1">
               Pencarian gagal
@@ -173,7 +173,7 @@ export default function SearchPage() {
         ) : (
           <div className="text-center py-12 mt-10">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
-              <SearchIcon className="w-8 h-8 text-gray-400" />
+              <MagnifyingGlassIcon className="w-8 h-8 text-gray-400" />
             </div>
             <h3 className="text-base font-medium text-gray-900 mb-1">
               Tidak ada hasil untuk &quot;{query}&quot;

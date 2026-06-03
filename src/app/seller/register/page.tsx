@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeftIcon } from '@phosphor-icons/react';
 import { useRouter } from 'next/navigation';
 import MitraRegistrationForm from '@/components/MitraRegistrationForm';
 
@@ -15,7 +15,7 @@ export default function MitraRegisterPage() {
             onClick={() => router.back()}
             className="p-1 -ml-1 hover:bg-white/20 rounded-lg transition-colors"
           >
-            <ArrowLeft className="w-6 h-6" />
+            <ArrowLeftIcon className="w-6 h-6" />
           </button>
           <h1 className="text-lg font-semibold">Daftar Mitra</h1>
         </div>

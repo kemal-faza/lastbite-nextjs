@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { ArrowLeft, Camera, Upload, X, Loader2 } from 'lucide-react';
+import { ArrowLeftIcon, CameraIcon, UploadIcon, XIcon, SpinnerIcon } from '@phosphor-icons/react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -93,7 +93,7 @@ export default function AddProductPage() {
             onClick={() => router.push('/seller')}
             className="p-1 -ml-1 hover:bg-white/20 rounded-lg transition-colors"
           >
-            <ArrowLeft className="w-6 h-6" />
+            <ArrowLeftIcon className="w-6 h-6" />
           </button>
           <h1 className="text-lg font-semibold">Tambah Produk</h1>
         </div>
@@ -234,7 +234,7 @@ export default function AddProductPage() {
                   onClick={clearImage}
                   className="absolute top-2 right-2 p-1 bg-black/50 text-white rounded-full hover:bg-black/70"
                 >
-                  <X className="w-4 h-4" />
+                  <XIcon className="w-4 h-4" />
                 </button>
               </div>
             ) : (
@@ -243,7 +243,7 @@ export default function AddProductPage() {
                 onClick={() => fileInputRef.current?.click()}
                 className="w-full border-2 border-dashed border-gray-300 rounded-2xl px-4 py-8 flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:border-gray-400 transition-colors"
               >
-                <Camera className="w-8 h-8 mb-2" />
+                <CameraIcon className="w-8 h-8 mb-2" />
                 <span className="text-sm">Ketuk untuk mengunggah foto</span>
               </button>
             )}
@@ -256,12 +256,12 @@ export default function AddProductPage() {
           >
             {submitting ? (
               <>
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <SpinnerIcon className="w-5 h-5 animate-spin" />
                 Mengunggah...
               </>
             ) : (
               <>
-                <Upload className="w-5 h-5" />
+                <UploadIcon className="w-5 h-5" />
                 Upload Produk
               </>
             )}

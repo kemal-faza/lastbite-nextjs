@@ -2,32 +2,32 @@
 
 import { useState } from 'react';
 import {
-  User,
-  Settings,
-  Clock,
-  Heart,
-  Award,
-  ChevronRight,
-  LogOut,
-  Shield,
-  HelpCircle,
-  Store,
-  Pencil,
-  Check,
-  X,
-} from 'lucide-react';
+  UserIcon,
+  GearIcon,
+  ClockIcon,
+  HeartIcon,
+  MedalIcon,
+  CaretRightIcon,
+  SignOutIcon,
+  ShieldIcon,
+  QuestionIcon,
+  StorefrontIcon,
+  PencilIcon,
+  CheckIcon,
+  XIcon,
+} from '@phosphor-icons/react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/context/AuthContext';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 const MENU_ITEMS = [
-  { icon: Clock, label: 'Riwayat Pesanan', path: '/orders' },
-  { icon: Heart, label: 'Menu Favorit', path: '/wishlist' },
-  { icon: Store, label: 'Dashboard Mitra', path: '/seller' },
-  { icon: Shield, label: 'Keamanan Akun', path: '#' },
-  { icon: Settings, label: 'Pengaturan', path: '#' },
-  { icon: HelpCircle, label: 'Pusat Bantuan', path: '#' },
+  { icon: ClockIcon, label: 'Riwayat Pesanan', path: '/orders' },
+  { icon: HeartIcon, label: 'Menu Favorit', path: '/wishlist' },
+  { icon: StorefrontIcon, label: 'Dashboard Mitra', path: '/seller' },
+  { icon: ShieldIcon, label: 'Keamanan Akun', path: '#' },
+  { icon: GearIcon, label: 'Pengaturan', path: '#' },
+  { icon: QuestionIcon, label: 'Pusat Bantuan', path: '#' },
 ];
 
 export default function ProfilePage() {
@@ -92,7 +92,7 @@ export default function ProfilePage() {
   if (!user) {
     return (
       <div className="flex flex-col items-center justify-center h-full px-6">
-        <User className="w-16 h-16 text-gray-300 mb-4" />
+        <UserIcon className="w-16 h-16 text-gray-300 mb-4" />
         <h2 className="text-lg font-semibold text-gray-700 mb-2">Belum Masuk</h2>
         <p className="text-sm text-gray-500 text-center mb-6">
           Masuk untuk melihat profil, riwayat pesanan, dan mengelola akun Anda
@@ -128,7 +128,7 @@ export default function ProfilePage() {
               />
             </div>
             <div className="absolute bottom-0 right-0 w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
-              <Award className="w-3 h-3 text-white" />
+              <MedalIcon className="w-3 h-3 text-white" />
             </div>
           </div>
           <div className="flex-1">
@@ -164,14 +164,14 @@ export default function ProfilePage() {
                     className="flex items-center gap-1 px-3 py-1.5 bg-[var(--primary)] text-white text-xs font-medium rounded-lg hover:bg-[#0d5558] disabled:opacity-50"
                     style={{ backgroundColor: 'var(--primary)' }}
                   >
-                    <Check className="w-3.5 h-3.5" />
+                    <CheckIcon className="w-3.5 h-3.5" />
                     {isSaving ? 'Menyimpan...' : 'Simpan'}
                   </button>
                   <button
                     onClick={handleCancelEdit}
                     className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-lg hover:bg-gray-200"
                   >
-                    <X className="w-3.5 h-3.5" />
+                    <XIcon className="w-3.5 h-3.5" />
                     Batal
                   </button>
                 </div>
@@ -184,7 +184,7 @@ export default function ProfilePage() {
                     onClick={handleStartEdit}
                     className="p-1 rounded-full hover:bg-gray-100 transition-colors"
                   >
-                    <Pencil className="w-3.5 h-3.5 text-gray-400" />
+                    <PencilIcon className="w-3.5 h-3.5 text-gray-400" />
                   </button>
                 </div>
                 <p className="text-sm text-gray-500 mb-2">{user.email}</p>
@@ -245,7 +245,7 @@ export default function ProfilePage() {
                 <span className="flex-1 text-sm font-medium text-gray-700 text-left">
                   {item.label}
                 </span>
-                <ChevronRight className="w-4 h-4 text-gray-300" />
+                <CaretRightIcon className="w-4 h-4 text-gray-300" />
               </button>
             );
           })}
@@ -258,7 +258,7 @@ export default function ProfilePage() {
           onClick={handleLogout}
           className="w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl border border-red-100 text-red-500 text-sm font-medium hover:bg-red-50 transition-colors"
         >
-          <LogOut className="w-4 h-4" />
+          <SignOutIcon className="w-4 h-4" />
           Keluar
         </button>
       </div>

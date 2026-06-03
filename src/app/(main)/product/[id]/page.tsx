@@ -2,15 +2,15 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import {
-	ChevronLeft,
-	Clock,
-	Heart,
-	MapPin,
-	Star,
-	Check,
-	ShoppingBag,
-	ShieldCheck,
-} from 'lucide-react';
+	CaretLeftIcon,
+	ClockIcon,
+	HeartIcon,
+	MapPinIcon,
+	StarIcon,
+	CheckIcon,
+	ShoppingBagIcon,
+	ShieldCheckIcon,
+} from '@phosphor-icons/react';
 import { motion } from 'motion/react';
 import { useProduct, useProducts } from '@/hooks/useProduct';
 import { ImageWithFallback } from '@/components/ImageWithFallback';
@@ -32,7 +32,7 @@ function LoadingSkeleton() {
 		<div className="flex flex-col h-full w-full animate-pulse">
 			<header className="bg-[var(--primary)] text-white px-4 py-3 flex items-center gap-3 shrink-0">
 				<button className="p-1" disabled>
-					<ChevronLeft className="w-6 h-6" />
+					<CaretLeftIcon className="w-6 h-6" />
 				</button>
 				<h1 className="text-lg font-semibold">Detail Produk</h1>
 			</header>
@@ -138,7 +138,7 @@ export default function DetailProductPage() {
 				<button
 					onClick={() => router.back()}
 					className="p-1">
-					<ChevronLeft className="w-6 h-6" />
+					<CaretLeftIcon className="w-6 h-6" />
 				</button>
 				<h1 className="text-lg font-semibold">Detail Produk</h1>
 			</header>
@@ -156,7 +156,7 @@ export default function DetailProductPage() {
 						-{product.discountPercent}%
 					</div>
 					<div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1 shadow-lg">
-						<Clock className="w-3 h-3 text-[var(--secondary)]" />
+						<ClockIcon className="w-3 h-3 text-[var(--secondary)]" />
 						<span className="text-xs font-medium text-[var(--secondary)]">
 							{formatExpiry(product.expiresAt)}
 						</span>
@@ -170,7 +170,7 @@ export default function DetailProductPage() {
 						aria-label={
 							isFav ? 'Hapus dari favorit' : 'Tambah ke favorit'
 						}>
-						<Heart
+						<HeartIcon
 							className={
 								'w-4 h-4 ' +
 								(isFav
@@ -196,9 +196,9 @@ export default function DetailProductPage() {
 									: 'bg-gray-50 text-gray-700 border-gray-100';
 								return (
 									<div key={badge.label} className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold shadow-sm border ${iconClass}`}>
-										{badge.icon === 'verified' && <ShieldCheck className="w-3.5 h-3.5" />}
-										{badge.icon === 'hygiene' && <Check className="w-3 h-3" />}
-										{badge.icon === 'popular' && <Star className="w-3 h-3 fill-current" />}
+										{badge.icon === 'verified' && <ShieldCheckIcon className="w-3.5 h-3.5" />}
+										{badge.icon === 'hygiene' && <CheckIcon className="w-3 h-3" />}
+										{badge.icon === 'popular' && <StarIcon className="w-3 h-3 fill-current" />}
 										{badge.label}
 									</div>
 								);
@@ -271,7 +271,7 @@ export default function DetailProductPage() {
 						<button
 							onClick={() => setIsMapOpen(true)}
 							className="mt-4 w-full flex items-center justify-center gap-2 py-2 border-2 border-gray-100 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
-							<MapPin className="w-4 h-4" />
+							<MapPinIcon className="w-4 h-4" />
 							Lihat di Peta
 						</button>
 					</div>
@@ -332,7 +332,7 @@ export default function DetailProductPage() {
 							? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
 							: 'bg-[var(--primary)] text-white hover:bg-[var(--primary)]/90 active:scale-[0.98]')
 					}>
-					<ShoppingBag className="w-5 h-5" />
+					<ShoppingBagIcon className="w-5 h-5" />
 					{isOutOfStock
 						? 'Stok Habis'
 						: isCartFull

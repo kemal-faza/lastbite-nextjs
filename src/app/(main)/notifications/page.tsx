@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, ShoppingBag, Bell, AlertTriangle } from 'lucide-react';
+import { ArrowLeftIcon, ShoppingBagIcon, BellIcon, WarningIcon } from '@phosphor-icons/react';
 import { useRouter } from 'next/navigation';
 import { useNotifications } from '@/hooks/useNotifications';
 import type { NotificationData } from '@/lib/api/notifications';
@@ -10,11 +10,11 @@ import { id } from 'date-fns/locale';
 function getIcon(type: NotificationData['type']) {
   switch (type) {
     case 'order_status':
-      return <ShoppingBag className="w-5 h-5 text-[var(--primary)]" />;
+      return <ShoppingBagIcon className="w-5 h-5 text-[var(--primary)]" />;
     case 'stock_alert':
-      return <AlertTriangle className="w-5 h-5 text-amber-500" />;
+      return <WarningIcon className="w-5 h-5 text-amber-500" />;
     default:
-      return <Bell className="w-5 h-5 text-gray-500" />;
+      return <BellIcon className="w-5 h-5 text-gray-500" />;
   }
 }
 
@@ -30,7 +30,7 @@ export default function NotificationsPage() {
           className="p-1 -ml-1 hover:bg-gray-100 rounded-lg transition-colors"
           aria-label="Kembali"
         >
-          <ArrowLeft className="w-5 h-5 text-gray-700" />
+          <ArrowLeftIcon className="w-5 h-5 text-gray-700" />
         </button>
         <h1 className="text-lg font-bold text-gray-900">Notifikasi</h1>
       </div>
@@ -48,7 +48,7 @@ export default function NotificationsPage() {
         ) : notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
             <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
-              <Bell className="w-12 h-12 text-gray-300" />
+              <BellIcon className="w-12 h-12 text-gray-300" />
             </div>
             <h2 className="text-xl font-bold text-gray-900 mb-2">Belum Ada Notifikasi</h2>
             <p className="text-gray-500 max-w-[250px]">

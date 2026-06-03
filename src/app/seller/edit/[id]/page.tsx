@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Camera, Upload, X, Loader2, Save } from 'lucide-react';
+import { ArrowLeftIcon, CameraIcon, XIcon, SpinnerIcon, FloppyDiskIcon } from '@phosphor-icons/react';
 import { useRouter, useParams } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -103,7 +103,7 @@ export default function EditProductPage() {
   if (loading) {
     return (
       <div className="size-full flex items-center justify-center bg-[var(--background)]">
-        <Loader2 className="w-6 h-6 animate-spin text-[var(--primary)]" />
+        <SpinnerIcon className="w-6 h-6 animate-spin text-[var(--primary)]" />
       </div>
     );
   }
@@ -124,7 +124,7 @@ export default function EditProductPage() {
       <header className="bg-[var(--primary)] text-white px-4 py-4 shadow-md">
         <div className="flex items-center gap-3">
           <button onClick={() => router.push('/seller')} className="p-1 -ml-1 hover:bg-white/20 rounded-lg transition-colors">
-            <ArrowLeft className="w-6 h-6" />
+            <ArrowLeftIcon className="w-6 h-6" />
           </button>
           <h1 className="text-lg font-semibold">Edit Produk</h1>
         </div>
@@ -197,13 +197,13 @@ export default function EditProductPage() {
                 <img src={imagePreview} alt="Preview" className="w-full h-48 object-cover" />
                 <button type="button" onClick={() => { setImageFile(null); setImagePreview(product?.imageUrl || null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
                   className="absolute top-2 right-2 p-1 bg-black/50 text-white rounded-full hover:bg-black/70">
-                  <X className="w-4 h-4" />
+                  <XIcon className="w-4 h-4" />
                 </button>
               </div>
             ) : (
               <button type="button" onClick={() => fileInputRef.current?.click()}
                 className="w-full border-2 border-dashed border-gray-300 rounded-2xl px-4 py-8 flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:border-gray-400 transition-colors">
-                <Camera className="w-8 h-8 mb-2" />
+                <CameraIcon className="w-8 h-8 mb-2" />
                 <span className="text-sm">Ketuk untuk mengganti foto</span>
               </button>
             )}
@@ -212,9 +212,9 @@ export default function EditProductPage() {
           <button type="submit" disabled={submitting}
             className="w-full bg-[var(--primary)] text-white font-semibold py-4 rounded-2xl hover:bg-[var(--primary)]/90 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             {submitting ? (
-              <><Loader2 className="w-5 h-5 animate-spin" /> Menyimpan...</>
+              <><SpinnerIcon className="w-5 h-5 animate-spin" /> Menyimpan...</>
             ) : (
-              <><Save className="w-5 h-5" /> Simpan Perubahan</>
+              <><FloppyDiskIcon className="w-5 h-5" /> Simpan Perubahan</>
             )}
           </button>
         </form>

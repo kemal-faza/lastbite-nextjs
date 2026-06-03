@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ChevronLeft, Mail } from 'lucide-react';
+import { CaretLeft as CaretLeftIcon, Envelope as EnvelopeIcon } from '@phosphor-icons/react';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 const RESEND_COOLDOWN_SECONDS = 30;
@@ -121,14 +121,14 @@ function OtpForm() {
           onClick={() => router.back()}
           className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-sm"
         >
-          <ChevronLeft className="w-5 h-5 text-gray-600" />
+          <CaretLeftIcon className="w-5 h-5 text-gray-600" />
         </button>
       </div>
 
       <div className="flex-1 flex flex-col items-center px-6 pt-8 pb-10 max-w-md mx-auto w-full">
         <div className="mb-8 text-center">
           <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Mail className="w-8 h-8 text-[var(--primary)]" />
+            <EnvelopeIcon className="w-8 h-8 text-[var(--primary)]" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Verifikasi Email</h1>
           <p className="text-sm text-gray-500 mt-2">

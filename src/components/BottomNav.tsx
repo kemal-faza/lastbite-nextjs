@@ -1,14 +1,14 @@
 'use client';
 
-import { Home, Search, ShoppingBag, User } from 'lucide-react';
+import { HouseIcon, MagnifyingGlassIcon, ShoppingBagIcon, UserIcon } from '@phosphor-icons/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const navItems = [
-  { id: 'home', path: '/', label: 'Beranda', icon: Home },
-  { id: 'search', path: '/search', label: 'Cari', icon: Search },
-  { id: 'cart', path: '/cart', label: 'Keranjang', icon: ShoppingBag },
-  { id: 'profile', path: '/profile', label: 'Profil', icon: User },
+  { id: 'home', path: '/', label: 'Beranda', icon: HouseIcon },
+  { id: 'search', path: '/search', label: 'Cari', icon: MagnifyingGlassIcon },
+  { id: 'cart', path: '/cart', label: 'Keranjang', icon: ShoppingBagIcon },
+  { id: 'profile', path: '/profile', label: 'Profil', icon: UserIcon },
 ];
 
 export function BottomNav() {

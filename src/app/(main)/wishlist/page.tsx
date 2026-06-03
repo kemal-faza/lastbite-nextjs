@@ -1,6 +1,6 @@
 'use client';
 
-import { Heart, ShoppingBag, ArrowLeft, Bell } from 'lucide-react';
+import { HeartIcon, ShoppingBagIcon, ArrowLeftIcon, BellIcon } from '@phosphor-icons/react';
 import { useRouter } from 'next/navigation';
 import { useWishlist } from '@/lib/context/WishlistContext';
 import { fetchWishlistProducts, subscribeToStockAlert, unsubscribeFromStockAlert, getStockAlertSubscriptions } from '@/lib/api/wishlist';
@@ -57,7 +57,7 @@ function WishlistItem({ product }: { product: ProductData }) {
                 : 'bg-gray-50 border-gray-100 text-gray-600 hover:bg-gray-100'
             }`}
           >
-            <Bell className={`w-3 h-3 ${subscribed ? 'fill-amber-600' : ''}`} />
+            <BellIcon className={`w-3 h-3 ${subscribed ? 'fill-amber-600' : ''}`} />
             {loading ? '...' : subscribed ? 'Aktif' : 'Ingatkan'}
           </button>
         )}
@@ -88,7 +88,7 @@ export default function WishlistPage() {
           className="p-1 -ml-1 hover:bg-gray-100 rounded-lg transition-colors"
           aria-label="Kembali"
         >
-          <ArrowLeft className="w-5 h-5 text-gray-700" />
+          <ArrowLeftIcon className="w-5 h-5 text-gray-700" />
         </button>
         <h1 className="text-lg font-bold text-gray-900">Favorit Saya</h1>
         <span className="text-sm text-gray-500 ml-auto">{count} item</span>
@@ -105,7 +105,7 @@ export default function WishlistPage() {
         ) : (
           <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
             <div className="w-24 h-24 bg-red-50 rounded-full flex items-center justify-center mb-6">
-              <Heart className="w-12 h-12 text-red-300" />
+              <HeartIcon className="w-12 h-12 text-red-300" />
             </div>
             <h2 className="text-xl font-bold text-gray-900 mb-2">Favorit Kosong</h2>
             <p className="text-gray-500 mb-8 max-w-[250px]">

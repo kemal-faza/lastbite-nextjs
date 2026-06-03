@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { ChevronLeft, Check, Clock, MapPin, Navigation, ShoppingBag } from 'lucide-react';
+import { CaretLeftIcon, CheckIcon, ClockIcon, MapPinIcon, NavigationArrowIcon, ShoppingBagIcon } from '@phosphor-icons/react';
 import { motion } from 'motion/react';
 import { QueueIndicator } from '@/components/QueueIndicator';
 import { WriteReviewModal } from '@/components/WriteReviewModal';
@@ -98,7 +98,7 @@ export default function ConfirmationPage() {
 						animate={{ scale: 1 }}
 						transition={{ type: 'spring', stiffness: 200, damping: 15 }}
 						className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center shadow-lg shadow-green-100/50">
-						<Check className="w-12 h-12 text-green-600" />
+						<CheckIcon className="w-12 h-12 text-green-600" />
 					</motion.div>
 					
 					<div className="space-y-2">
@@ -114,7 +114,7 @@ export default function ConfirmationPage() {
 					<div className="w-full bg-white rounded-2xl border border-green-100 p-5 shadow-sm space-y-4">
 						<div className="bg-green-50 rounded-xl p-3 flex items-center gap-3">
 							<div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center shrink-0">
-								<ShoppingBag className="w-5 h-5 text-white" />
+								<ShoppingBagIcon className="w-5 h-5 text-white" />
 							</div>
 							<div className="text-left">
 								<p className="text-xs text-green-700 font-semibold">Bumi Berterima Kasih</p>
@@ -181,7 +181,7 @@ export default function ConfirmationPage() {
 				<button
 					onClick={() => router.back()}
 					className="p-1">
-					<ChevronLeft className="w-6 h-6" />
+					<CaretLeftIcon className="w-6 h-6" />
 				</button>
 				<h1 className="text-lg font-semibold">Konfirmasi Pesanan</h1>
 			</header>
@@ -195,7 +195,7 @@ export default function ConfirmationPage() {
 					transition={{ type: 'spring', stiffness: 200, damping: 15 }}
 					className="flex flex-col items-center">
 					<div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-3">
-						<Check className="w-10 h-10 text-green-600" />
+						<CheckIcon className="w-10 h-10 text-green-600" />
 					</div>
 					<h2 className="text-2xl font-bold text-gray-900 text-center">
 						Pesanan Dikonfirmasi!
@@ -213,7 +213,7 @@ export default function ConfirmationPage() {
 				{/* Timer */}
 				<div className="text-center">
 					<div className="flex items-center justify-center gap-1.5">
-						<Clock className="w-5 h-5 text-[var(--destructive)]" />
+						<ClockIcon className="w-5 h-5 text-[var(--destructive)]" />
 						<span className="text-sm text-gray-600">
 							Selesaikan dalam
 						</span>
@@ -270,7 +270,7 @@ export default function ConfirmationPage() {
 					</h3>
 					<div className="flex items-start gap-3">
 						<div className="w-10 h-10 bg-[var(--primary)]/10 rounded-full flex items-center justify-center shrink-0">
-							<MapPin className="w-5 h-5 text-[var(--primary)]" />
+							<MapPinIcon className="w-5 h-5 text-[var(--primary)]" />
 						</div>
 						<div>
 							<p className="font-medium text-gray-900">
@@ -288,7 +288,7 @@ export default function ConfirmationPage() {
 				{/* Action buttons */}
 				<div className="space-y-3">
 					<button className="w-full bg-[var(--secondary)] text-white font-semibold py-3.5 rounded-2xl flex items-center justify-center gap-2 hover:bg-[var(--secondary)]/90 active:scale-[0.98] transition-all">
-						<Navigation className="w-5 h-5" />
+						<NavigationArrowIcon className="w-5 h-5" />
 						Lihat Petunjuk Jalan
 					</button>
 					{isPendingPickup && (

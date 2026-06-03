@@ -5,7 +5,7 @@ import { getMitraVerifications, verifyMitra, type MitraVerificationItem } from '
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircleIcon, XCircleIcon } from '@phosphor-icons/react';
 
 const STATUS_LABELS: Record<string, string> = {
   PENDING: 'Menunggu',
@@ -116,7 +116,7 @@ export default function MitraVerificationPage() {
                       className="bg-green-600 hover:bg-green-700"
                       onClick={() => handleVerify(profile.id, 'VERIFIED')}
                     >
-                      <CheckCircle size={16} className="mr-1" />
+                      <CheckCircleIcon size={16} className="mr-1" />
                       Setujui
                     </Button>
                     <Button
@@ -124,7 +124,7 @@ export default function MitraVerificationPage() {
                       variant="destructive"
                       onClick={() => handleVerify(profile.id, 'REJECTED')}
                     >
-                      <XCircle size={16} className="mr-1" />
+                      <XCircleIcon size={16} className="mr-1" />
                       Tolak
                     </Button>
                   </div>

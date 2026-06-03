@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, Store, Package, Plus, ExternalLink, Loader2, BarChart3, LayoutDashboard } from 'lucide-react';
+import { ArrowLeftIcon, StorefrontIcon, PackageIcon, PlusIcon, ArrowSquareOutIcon, SpinnerIcon, ChartBarIcon, SquaresFourIcon } from '@phosphor-icons/react';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback } from 'react';
 import { getMitraProfile, fetchMitraStats, fetchMitraProducts, type MitraProfile, type MitraStats } from '@/lib/api/mitra';
@@ -98,7 +98,7 @@ export default function SellerDashboardPage() {
   if (loading) {
     return (
       <div className="size-full flex items-center justify-center bg-[var(--background)]">
-        <Loader2 className="w-6 h-6 animate-spin text-[var(--primary)]" />
+        <SpinnerIcon className="w-6 h-6 animate-spin text-[var(--primary)]" />
       </div>
     );
   }
@@ -110,16 +110,16 @@ export default function SellerDashboardPage() {
         <header className="bg-[var(--primary)] text-white px-4 py-4 shadow-md">
           <div className="flex items-center gap-3">
             <button onClick={() => router.push('/profile')} className="p-1.5 -ml-1.5 hover:bg-white/20 rounded-xl transition-all flex items-center justify-center text-white" aria-label="Kembali ke Mode Pembeli">
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeftIcon className="w-5 h-5" />
             </button>
             <h1 className="flex-1 text-base font-bold text-center">Dashboard Mitra</h1>
-            <Store className="w-5 h-5 text-white/80" />
+            <StorefrontIcon className="w-5 h-5 text-white/80" />
           </div>
         </header>
 
         <div className="flex-1 flex flex-col items-center justify-center px-6 pb-20 text-center">
           <div className="w-20 h-20 bg-[var(--primary)]/10 rounded-full flex items-center justify-center mb-4">
-            <Store className="w-10 h-10 text-[var(--primary)]" />
+            <StorefrontIcon className="w-10 h-10 text-[var(--primary)]" />
           </div>
           <h2 className="text-lg font-bold text-gray-800 mb-2">Jadi Mitra LastBite</h2>
           <p className="text-sm text-gray-500 mb-6 leading-relaxed max-w-xs">
@@ -143,10 +143,10 @@ export default function SellerDashboardPage() {
       <header className="bg-[var(--primary)] text-white px-4 py-4 shadow-md">
         <div className="flex items-center gap-3">
           <button onClick={() => router.push('/profile')} className="p-1.5 -ml-1.5 hover:bg-white/20 rounded-xl transition-all flex items-center justify-center text-white" aria-label="Kembali ke Mode Pembeli">
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeftIcon className="w-5 h-5" />
           </button>
           <h1 className="flex-1 text-base font-bold text-center">{profile.storeName}</h1>
-          <Store className="w-5 h-5 text-white/80" />
+          <StorefrontIcon className="w-5 h-5 text-white/80" />
         </div>
 
         {/* Tab Navigation */}
@@ -159,7 +159,7 @@ export default function SellerDashboardPage() {
                 : 'text-white/80 hover:text-white'
             }`}
           >
-            <LayoutDashboard className="w-3.5 h-3.5" />
+            <SquaresFourIcon className="w-3.5 h-3.5" />
             Ringkasan
           </button>
           <button
@@ -173,7 +173,7 @@ export default function SellerDashboardPage() {
                 : 'text-white/80 hover:text-white'
             }`}
           >
-            <BarChart3 className="w-3.5 h-3.5" />
+            <ChartBarIcon className="w-3.5 h-3.5" />
             Analitik
           </button>
         </div>
@@ -195,9 +195,9 @@ export default function SellerDashboardPage() {
                     onClick={() => router.push('/seller/orders')}
                     className="mt-3 w-full bg-[var(--secondary)]/10 text-[var(--secondary)] font-medium text-sm px-4 py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-[var(--secondary)]/20 transition-colors"
                   >
-                    <Package className="w-4 h-4" />
+                    <PackageIcon className="w-4 h-4" />
                     {stats.activeOrders} Pesanan Masuk
-                    <ExternalLink className="w-3.5 h-3.5" />
+                    <ArrowSquareOutIcon className="w-3.5 h-3.5" />
                   </button>
                 )}
               </section>
@@ -206,7 +206,7 @@ export default function SellerDashboardPage() {
             <div className="bg-gradient-to-r from-green-50 to-teal-50 rounded-2xl p-4 border border-green-100">
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center shrink-0">
-                  <Store className="w-5 h-5 text-green-700" />
+                  <StorefrontIcon className="w-5 h-5 text-green-700" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 text-sm">Mitra LastBite</h3>
@@ -228,7 +228,7 @@ export default function SellerDashboardPage() {
                   onClick={() => router.push('/seller/add')}
                   className="text-xs font-medium text-[var(--primary)] flex items-center gap-1"
                 >
-                  <Plus className="w-3.5 h-3.5" />
+                  <PlusIcon className="w-3.5 h-3.5" />
                   Tambah
                 </button>
               </div>
@@ -272,7 +272,7 @@ export default function SellerDashboardPage() {
           onClick={() => router.push('/seller/add')}
           className="fixed bottom-24 right-6 w-14 h-14 rounded-full bg-[var(--primary)] text-white shadow-lg flex items-center justify-center hover:bg-[var(--primary)]/90 transition-colors z-50"
         >
-          <Plus className="w-7 h-7" />
+          <PlusIcon className="w-7 h-7" />
         </button>
       )}
     </div>

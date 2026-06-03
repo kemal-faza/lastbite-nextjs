@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Link from 'next/link';
-import { Eye, EyeOff, ChevronLeft, Utensils } from 'lucide-react';
+import { Eye as EyeIcon, EyeClosed as EyeClosedIcon, CaretLeft as CaretLeftIcon, ForkKnife as ForkKnifeIcon } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -78,14 +78,14 @@ export default function RegisterPage() {
           onClick={() => router.back()}
           className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-sm"
         >
-          <ChevronLeft className="w-5 h-5 text-gray-600" />
+          <CaretLeftIcon className="w-5 h-5 text-gray-600" />
         </button>
       </div>
 
       <div className="flex-1 flex flex-col px-6 pt-8 pb-10 max-w-md mx-auto w-full">
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-2">
-            <Utensils className="w-6 h-6 text-[var(--primary)]" />
+            <ForkKnifeIcon className="w-6 h-6 text-[var(--primary)]" />
             <span className="text-lg font-bold text-[var(--primary)]">LastBite</span>
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Daftar Akun Baru</h1>
@@ -157,7 +157,7 @@ export default function RegisterPage() {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
               >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showPassword ? <EyeClosedIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
               </button>
             </div>
             {errors.password && (

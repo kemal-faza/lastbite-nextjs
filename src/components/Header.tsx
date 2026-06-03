@@ -1,6 +1,6 @@
 'use client';
 
-import { MapPin } from 'lucide-react';
+import { MapPinIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { NotificationBell } from '@/components/NotificationBell';
 import { NotificationCenter } from '@/components/NotificationCenter';
@@ -18,7 +18,7 @@ export function Header() {
               <span className="text-2xl font-bold tracking-tight text-[var(--secondary)]">BITE</span>
             </div>
             <div className="flex items-center gap-1 text-white/70 text-sm mt-1">
-              <MapPin className="w-3 h-3" />
+              <MapPinIcon className="w-3 h-3" />
               <span>Semarang, Indonesia</span>
             </div>
           </div>

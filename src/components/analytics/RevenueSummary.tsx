@@ -1,7 +1,7 @@
 'use client';
 
 import type { RevenueSummary } from '@/lib/api/analytics';
-import { DollarSign, TrendingDown, ShoppingBag, Package } from 'lucide-react';
+import { CurrencyDollarIcon, TrendDownIcon, ShoppingBagIcon, PackageIcon } from '@phosphor-icons/react';
 
 interface Props {
   data: RevenueSummary;
@@ -15,10 +15,10 @@ function formatRupiah(value: number): string {
 }
 
 const skeletonCards = [
-  { label: 'Total Pendapatan', icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-  { label: 'Total Hemat Pembeli', icon: TrendingDown, color: 'text-amber-600', bg: 'bg-amber-50' },
-  { label: 'Jumlah Pesanan', icon: ShoppingBag, color: 'text-blue-600', bg: 'bg-blue-50' },
-  { label: 'Item Terjual', icon: Package, color: 'text-purple-600', bg: 'bg-purple-50' },
+  { label: 'Total Pendapatan', icon: CurrencyDollarIcon, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+  { label: 'Total Hemat Pembeli', icon: TrendDownIcon, color: 'text-amber-600', bg: 'bg-amber-50' },
+  { label: 'Jumlah Pesanan', icon: ShoppingBagIcon, color: 'text-blue-600', bg: 'bg-blue-50' },
+  { label: 'Item Terjual', icon: PackageIcon, color: 'text-purple-600', bg: 'bg-purple-50' },
 ];
 
 export default function RevenueSummaryComponent({ data, loading }: Props) {
@@ -36,10 +36,10 @@ export default function RevenueSummaryComponent({ data, loading }: Props) {
   }
 
   const cards = [
-    { label: 'Total Pendapatan', value: formatRupiah(data.totalRevenue), icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-    { label: 'Total Hemat Pembeli', value: formatRupiah(data.totalSavings), icon: TrendingDown, color: 'text-amber-600', bg: 'bg-amber-50' },
-    { label: 'Jumlah Pesanan', value: data.totalOrders.toString(), icon: ShoppingBag, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { label: 'Item Terjual', value: data.totalItems.toString(), icon: Package, color: 'text-purple-600', bg: 'bg-purple-50' },
+    { label: 'Total Pendapatan', value: formatRupiah(data.totalRevenue), icon: CurrencyDollarIcon, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    { label: 'Total Hemat Pembeli', value: formatRupiah(data.totalSavings), icon: TrendDownIcon, color: 'text-amber-600', bg: 'bg-amber-50' },
+    { label: 'Jumlah Pesanan', value: data.totalOrders.toString(), icon: ShoppingBagIcon, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { label: 'Item Terjual', value: data.totalItems.toString(), icon: PackageIcon, color: 'text-purple-600', bg: 'bg-purple-50' },
   ];
 
   return (

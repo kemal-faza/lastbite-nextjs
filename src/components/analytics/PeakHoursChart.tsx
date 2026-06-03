@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import type { PeakHourEntry } from '@/lib/api/analytics';
-import { Clock } from 'lucide-react';
+import { ClockIcon } from '@phosphor-icons/react';
 
 interface Props {
   data: PeakHourEntry[];
@@ -34,7 +34,7 @@ export default function PeakHoursChart({ data, loading }: Props) {
   if (data.every((d) => d.orders === 0)) {
     return (
       <div className="bg-white rounded-2xl shadow-sm p-6 text-center">
-        <Clock className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+        <ClockIcon className="w-10 h-10 text-gray-300 mx-auto mb-3" />
         <h3 className="text-sm font-medium text-gray-600">Belum Ada Data</h3>
         <p className="text-xs text-gray-400 mt-1">Data jam sibuk akan muncul setelah ada beberapa pesanan.</p>
       </div>

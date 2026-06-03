@@ -14,6 +14,7 @@ export interface ProductData {
   storeAddress: string | null;
   storeLat: number | null;
   storeLng: number | null;
+  distanceKm?: number;
   expiresAt: string;
   isActive: boolean;
   createdAt: string;
@@ -40,6 +41,9 @@ export interface FetchProductsParams {
   sort?: string;
   page?: number;
   limit?: number;
+  lat?: number;
+  lng?: number;
+  radius?: number;
 }
 
 export async function fetchProducts(params: FetchProductsParams = {}): Promise<ProductListResponse> {
@@ -48,6 +52,9 @@ export async function fetchProducts(params: FetchProductsParams = {}): Promise<P
   if (params.sort) searchParams.set('sort', params.sort);
   if (params.page) searchParams.set('page', String(params.page));
   if (params.limit) searchParams.set('limit', String(params.limit));
+  if (params.lat !== undefined) searchParams.set('lat', String(params.lat));
+  if (params.lng !== undefined) searchParams.set('lng', String(params.lng));
+  if (params.radius !== undefined) searchParams.set('radius', String(params.radius));
 
   const query = searchParams.toString();
   const path = `/products${query ? '?' + query : ''}`;

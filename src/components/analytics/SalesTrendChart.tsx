@@ -6,7 +6,7 @@ import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { format, parseISO } from 'date-fns';
 import { id } from 'date-fns/locale';
 import type { SalesTrendEntry } from '@/lib/api/analytics';
-import { TrendingUp } from 'lucide-react';
+import { TrendUpIcon } from '@phosphor-icons/react';
 
 interface Props {
   data: SalesTrendEntry[];
@@ -47,7 +47,7 @@ export default function SalesTrendChart({ data, granularity, loading }: Props) {
   if (data.length === 0) {
     return (
       <div className="bg-white rounded-2xl shadow-sm p-6 text-center">
-        <TrendingUp className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+        <TrendUpIcon className="w-10 h-10 text-gray-300 mx-auto mb-3" />
         <h3 className="text-sm font-medium text-gray-600">Belum Ada Data</h3>
         <p className="text-xs text-gray-400 mt-1">Data penjualan akan muncul setelah ada pesanan yang selesai.</p>
       </div>

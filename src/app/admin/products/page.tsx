@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
-import { Search, Eye, EyeOff } from 'lucide-react';
+import { MagnifyingGlassIcon, EyeIcon, EyeClosedIcon } from '@phosphor-icons/react';
 
 const formatPrice = (price: number) =>
   new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(price);
@@ -53,7 +53,7 @@ export default function ProductsPage() {
 
       <div className="flex gap-2 mb-4">
         <div className="relative flex-1 max-w-sm">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <MagnifyingGlassIcon size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <Input
             placeholder="Cari produk..."
             value={search}
@@ -110,9 +110,9 @@ export default function ProductsPage() {
                       onClick={() => handleToggle(product.id, !product.isActive)}
                     >
                       {product.isActive ? (
-                        <><EyeOff size={14} className="mr-1" /> Nonaktifkan</>
+                        <><EyeClosedIcon size={14} className="mr-1" /> Nonaktifkan</>
                       ) : (
-                        <><Eye size={14} className="mr-1" /> Aktifkan</>
+                        <><EyeIcon size={14} className="mr-1" /> Aktifkan</>
                       )}
                     </Button>
                   </TableCell>

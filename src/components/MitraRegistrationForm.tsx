@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Store, Loader2 } from 'lucide-react';
+import { StorefrontIcon, SpinnerIcon } from '@phosphor-icons/react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { registerMitra } from '@/lib/api/mitra';
@@ -50,7 +50,7 @@ export default function MitraRegistrationForm() {
       <div className="bg-gradient-to-r from-green-50 to-teal-50 rounded-2xl p-4 border border-green-100">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center shrink-0">
-            <Store className="w-5 h-5 text-green-700" />
+            <StorefrontIcon className="w-5 h-5 text-green-700" />
           </div>
           <div>
             <h3 className="font-semibold text-gray-900 text-sm">Daftar Menjadi Mitra</h3>
@@ -100,7 +100,7 @@ export default function MitraRegistrationForm() {
       >
         {submitting ? (
           <>
-            <Loader2 className="w-5 h-5 animate-spin" />
+            <SpinnerIcon className="w-5 h-5 animate-spin" />
             Mendaftarkan...
           </>
         ) : (

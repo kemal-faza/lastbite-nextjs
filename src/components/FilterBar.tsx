@@ -1,4 +1,4 @@
-import { ArrowUpDown, DollarSign, MapPin, Clock, SlidersHorizontal } from 'lucide-react';
+import { ArrowsDownUpIcon, CurrencyDollarIcon, MapPinIcon, ClockIcon, SlidersIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { FilterModal } from './FilterModal';
 import type { FilterValues } from './FilterModal';
@@ -12,11 +12,11 @@ interface FilterBarProps {
   onFiltersChange: (filters: FilterValues) => void;
 }
 
-const sortOptions: { value: SortOption; label: string; icon: typeof DollarSign }[] = [
-  { value: 'price-asc', label: 'Termurah', icon: DollarSign },
-  { value: 'price-desc', label: 'Termahal', icon: DollarSign },
-  { value: 'distance-asc', label: 'Terdekat', icon: MapPin },
-  { value: 'remaining-asc', label: 'Segera Habis', icon: Clock },
+const sortOptions: { value: SortOption; label: string; icon: typeof CurrencyDollarIcon }[] = [
+  { value: 'price-asc', label: 'Termurah', icon: CurrencyDollarIcon },
+  { value: 'price-desc', label: 'Termahal', icon: CurrencyDollarIcon },
+  { value: 'distance-asc', label: 'Terdekat', icon: MapPinIcon },
+  { value: 'remaining-asc', label: 'Segera Habis', icon: ClockIcon },
 ];
 
 export function FilterBar({ activeSort, onSortChange, filters, onFiltersChange }: FilterBarProps) {
@@ -26,14 +26,14 @@ export function FilterBar({ activeSort, onSortChange, filters, onFiltersChange }
     <div>
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-1.5">
-          <ArrowUpDown className="w-3.5 h-3.5 text-gray-500" />
+          <ArrowsDownUpIcon className="w-3.5 h-3.5 text-gray-500" />
           <span className="text-xs font-medium text-gray-500">Urutkan</span>
         </div>
         <button 
           onClick={() => setIsFilterOpen(true)}
           className="flex items-center gap-1.5 px-3 py-1 bg-[var(--primary)]/5 text-[var(--primary)] rounded-lg text-xs font-bold border border-[var(--primary)]/10 hover:bg-[var(--primary)]/10 transition-colors"
         >
-          <SlidersHorizontal className="w-3 h-3" />
+          <SlidersIcon className="w-3 h-3" />
           Filter
         </button>
       </div>

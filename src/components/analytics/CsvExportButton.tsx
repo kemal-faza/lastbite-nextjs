@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Download, Loader2 } from 'lucide-react';
+import { DownloadIcon, SpinnerIcon } from '@phosphor-icons/react';
 import { getExportCsvUrl } from '@/lib/api/analytics';
 
 interface Props {
@@ -44,9 +44,9 @@ export default function CsvExportButton({ from, to, disabled }: Props) {
       className="flex items-center gap-2 px-3 py-2 bg-white rounded-xl border border-gray-200 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
     >
       {loading ? (
-        <Loader2 className="w-4 h-4 animate-spin" />
+        <SpinnerIcon className="w-4 h-4 animate-spin" />
       ) : (
-        <Download className="w-4 h-4" />
+        <DownloadIcon className="w-4 h-4" />
       )}
       Ekspor CSV
     </button>
