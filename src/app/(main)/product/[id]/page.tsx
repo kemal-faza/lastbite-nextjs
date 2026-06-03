@@ -17,6 +17,7 @@ import { ImageWithFallback } from '@/components/ImageWithFallback';
 import { AIRecommendation } from '@/components/AIRecommendation';
 import { useCart } from '@/lib/context/CartContext';
 import { useWishlist } from '@/lib/context/WishlistContext';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { QueueIndicator } from '@/components/QueueIndicator';
 import { MapModal } from '@/components/MapModal';
 import { ReviewList } from '@/components/ReviewList';
@@ -95,7 +96,8 @@ export default function DetailProductPage() {
 		loadMore,
 	} = useReviews(product?.id || '');
 
-	const [trustBadges, setTrustBadges] = useState<Array<{ label: string; icon: string }>>([]);
+  const { requireAuth } = useRequireAuth();
+  const [trustBadges, setTrustBadges] = useState<Array<{ label: string; icon: string }>>([]);
 	useEffect(() => {
 		if (!product?.id) return;
 		fetchTrustBadges(product.id)
@@ -306,7 +308,8 @@ export default function DetailProductPage() {
 			<div className="fixed bottom-[72px] left-4 right-4 max-w-[calc(theme(maxWidth.md)-2rem)] mx-auto bg-white/95 backdrop-blur-md border border-gray-100 p-4 z-40 rounded-2xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1)]">
 				<button
 					disabled={cannotBuy}
-					onClick={() => {
+					onClick={() =>
+					requireAuth(() => {
 						if (
 							cartItems.length > 0 &&
 							cartItems[0].store !== product.storeName
@@ -321,7 +324,8 @@ export default function DetailProductPage() {
 						}
 						addItem(product.id);
 						router.push('/cart');
-					}}
+					})
+				}
 					className={
 						'w-full font-semibold py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-all ' +
 						(cannotBuy

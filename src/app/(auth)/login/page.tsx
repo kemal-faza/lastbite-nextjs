@@ -20,6 +20,18 @@ type LoginFormData = z.infer<typeof loginFormSchema>;
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
+function isValidReturnUrl(url: string): boolean {
+  // Must start with /
+  if (!url.startsWith('/')) return false;
+  // Must not contain :// (protocol injection)
+  if (url.includes('://')) return false;
+  // Must not contain // (protocol-relative URL attack)
+  if (url.includes('//')) return false;
+  // Must not contain @ (credential injection)
+  if (url.includes('@')) return false;
+  return true;
+}
+
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -63,7 +75,12 @@ function LoginForm() {
       localStorage.setItem('refreshToken', body.tokens.refreshToken);
       localStorage.setItem('user', JSON.stringify(body.user));
 
-      router.push('/');
+      const returnUrl = searchParams.get('returnUrl');
+      if (returnUrl && isValidReturnUrl(returnUrl)) {
+        router.push(returnUrl);
+      } else {
+        router.push('/');
+      }
     } catch {
       setServerError('Tidak dapat terhubung ke server. Periksa koneksi Anda.');
     } finally {

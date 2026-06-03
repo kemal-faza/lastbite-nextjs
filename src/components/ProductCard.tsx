@@ -9,6 +9,8 @@ import { useCart } from '@/lib/context/CartContext';
 import { useWishlist } from '@/lib/context/WishlistContext';
 import { ImageWithFallback } from './ImageWithFallback';
 import { formatExpiry } from '@/lib/utils/date';
+import { formatDistance } from '@/lib/utils/distance';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 interface ProductCardProps {
   product: ProductData;
@@ -20,6 +22,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const { items: cartItems, addItem, clearCart } = useCart();
   const { toggle, isWishlisted } = useWishlist();
   const isFav = isWishlisted(product.id);
+  const { requireAuth } = useRequireAuth();
 
   const handleAddToCart = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -82,6 +85,14 @@ export function ProductCard({ product }: ProductCardProps) {
         <div className="flex items-center gap-1 text-gray-600 text-sm mb-1">
           <MapPin className="w-3 h-3" />
           <span>{product.storeName}</span>
+          {product.distanceKm != null && (
+            <>
+              <span className="text-gray-300 mx-0.5">·</span>
+              <span className="text-[var(--primary)] font-medium text-xs">
+                {formatDistance(product.distanceKm)}
+              </span>
+            </>
+          )}
         </div>
 
         <p className="text-xs text-[var(--destructive)] mb-3">
@@ -112,7 +123,7 @@ export function ProductCard({ product }: ProductCardProps) {
           ) : (
             <motion.button
               whileTap={{ scale: 0.95 }}
-              onClick={handleAddToCart}
+              onClick={(e) => requireAuth(() => handleAddToCart(e))}
               disabled={product.stock <= 0}
               aria-label={isAdded ? 'Ditambahkan ' + product.name + ' ke keranjang' : 'Beli ' + product.name}
               className={
