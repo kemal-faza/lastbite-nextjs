@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/lib/context/AuthContext';
 import { useRouter, usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import {
   LayoutDashboard,
@@ -30,15 +30,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push('/login');
-    } else if (!isLoading && user && user.role !== 'ADMIN') {
-      router.push('/');
-    }
-  }, [isLoading, isAuthenticated, user, router]);
-
-  if (isLoading || !isAuthenticated || (user && user.role !== 'ADMIN')) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#e4dcca]">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#11676a]" />

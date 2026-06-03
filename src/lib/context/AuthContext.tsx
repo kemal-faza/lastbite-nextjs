@@ -109,6 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     clearTokens();
     setUser(null);
+    document.cookie = 'user-role=; path=/; max-age=0; SameSite=Lax';
   }, []);
 
   const updateProfile = useCallback(async (data: { name?: string; phone?: string }) => {

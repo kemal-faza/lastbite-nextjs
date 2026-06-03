@@ -75,9 +75,17 @@ function LoginForm() {
       localStorage.setItem('refreshToken', body.tokens.refreshToken);
       localStorage.setItem('user', JSON.stringify(body.user));
 
+      // Set role cookie (non-HTTP-only, readable by middleware)
+      const role = body.user.role;
+      document.cookie = `user-role=${role}; path=/; max-age=86400; SameSite=Lax`;
+
       const returnUrl = searchParams.get('returnUrl');
       if (returnUrl && isValidReturnUrl(returnUrl)) {
         router.push(returnUrl);
+      } else if (role === 'ADMIN') {
+        router.push('/admin');
+      } else if (role === 'MITRA') {
+        router.push('/seller');
       } else {
         router.push('/');
       }
