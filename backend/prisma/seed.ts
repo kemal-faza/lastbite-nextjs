@@ -3,40 +3,59 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 const SALT_ROUNDS = 12;
-const MITRA_EMAIL = "mitra@lastbite.id";
-
 interface MitraUser {
   id: string;
   email: string;
+  store: string;
 }
 
-async function ensureMitraUser(): Promise<MitraUser> {
-  let mitra = await prisma.user.findUnique({ where: { email: MITRA_EMAIL } });
+const MITRA_SEEDS = [
+  { email: "dapurbuani@lastbite.id", name: "Dapur Bu Ani", store: "Dapur Bu Ani" },
+  { email: "rmpadang@lastbite.id", name: "RM Padang Suharti", store: "RM Padang Suharti" },
+  { email: "bakeria@lastbite.id", name: "Bakeria", store: "Bakeria" },
+  { email: "kopiaroma@lastbite.id", name: "Warung Kopi Aroma", store: "Warung Kopi Aroma" },
+  { email: "mieayam@lastbite.id", name: "Mie Ayam Mang Udin", store: "Mie Ayam Mang Udin" },
+] as const;
 
-  if (!mitra) {
-    const passwordHash = await bcrypt.hash("password123", SALT_ROUNDS);
-    mitra = await prisma.user.create({
-      data: {
-        email: MITRA_EMAIL,
-        name: "Mitra LastBite",
-        phone: "081234567890",
-        role: "MITRA",
-        passwordHash,
-        isVerified: true,
-      },
-    });
-    console.log(`Created MITRA user: ${mitra.email}`);
-  } else {
-    console.log(`MITRA user already exists: ${mitra.email}`);
+async function ensureMitraUsers(): Promise<MitraUser[]> {
+  const mitras: MitraUser[] = [];
+
+  for (const seed of MITRA_SEEDS) {
+    let mitra = await prisma.user.findUnique({ where: { email: seed.email } });
+
+    if (!mitra) {
+      const passwordHash = await bcrypt.hash("password123", SALT_ROUNDS);
+      mitra = await prisma.user.create({
+        data: {
+          email: seed.email,
+          name: seed.name,
+          phone: "081234567890",
+          role: "MITRA",
+          passwordHash,
+          isVerified: true,
+        },
+      });
+      console.log(`Created MITRA user: ${seed.email} (${seed.name})`);
+    } else {
+      console.log(`MITRA user already exists: ${seed.email}`);
+    }
+
+    mitras.push({ id: mitra.id, email: mitra.email, store: seed.store });
   }
 
-  return { id: mitra.id, email: mitra.email };
+  return mitras;
 }
 
-function getDefaultProducts(mitraId: string) {
+function getDefaultProducts(mitraMap: Map<string, string>) {
   // Use a fixed future expiry for dev stability (products won't go stale)
   const expiresInHours = (hours: number) =>
     new Date(Date.now() + hours * 60 * 60 * 1000);
+
+  const dapurbuaniId = mitraMap.get("dapurbuani@lastbite.id")!;
+  const rmpadangId = mitraMap.get("rmpadang@lastbite.id")!;
+  const bakeriaId = mitraMap.get("bakeria@lastbite.id")!;
+  const kopiaromaId = mitraMap.get("kopiaroma@lastbite.id")!;
+  const mieayamId = mitraMap.get("mieayam@lastbite.id")!;
 
   return [
     {
@@ -53,7 +72,7 @@ function getDefaultProducts(mitraId: string) {
       storeLat: -6.9875,
       storeLng: 110.4216,
       expiresAt: expiresInHours(4),
-      mitraId,
+      mitraId: dapurbuaniId,
     },
     {
       name: "Nasi Padang",
@@ -69,7 +88,7 @@ function getDefaultProducts(mitraId: string) {
       storeLat: -6.9694,
       storeLng: 110.4272,
       expiresAt: expiresInHours(3),
-      mitraId,
+      mitraId: rmpadangId,
     },
     {
       name: "Roti Coklat",
@@ -85,7 +104,7 @@ function getDefaultProducts(mitraId: string) {
       storeLat: -6.9838,
       storeLng: 110.4163,
       expiresAt: expiresInHours(5),
-      mitraId,
+      mitraId: bakeriaId,
     },
     {
       name: "Kopi Susu Gula Aren",
@@ -101,7 +120,7 @@ function getDefaultProducts(mitraId: string) {
       storeLat: -6.9867,
       storeLng: 110.4223,
       expiresAt: expiresInHours(2),
-      mitraId,
+      mitraId: kopiaromaId,
     },
     {
       name: "Nasi Goreng Kampung",
@@ -117,7 +136,7 @@ function getDefaultProducts(mitraId: string) {
       storeLat: -6.9875,
       storeLng: 110.4216,
       expiresAt: expiresInHours(3),
-      mitraId,
+      mitraId: dapurbuaniId,
     },
     {
       name: "Roti Keju",
@@ -133,7 +152,7 @@ function getDefaultProducts(mitraId: string) {
       storeLat: -6.9838,
       storeLng: 110.4163,
       expiresAt: expiresInHours(4),
-      mitraId,
+      mitraId: bakeriaId,
     },
     {
       name: "Es Teh Tarik",
@@ -149,7 +168,7 @@ function getDefaultProducts(mitraId: string) {
       storeLat: -6.9867,
       storeLng: 110.4223,
       expiresAt: expiresInHours(2),
-      mitraId,
+      mitraId: kopiaromaId,
     },
     {
       name: "Mie Ayam Komplit",
@@ -165,16 +184,17 @@ function getDefaultProducts(mitraId: string) {
       storeLat: -6.9802,
       storeLng: 110.4195,
       expiresAt: expiresInHours(3),
-      mitraId,
+      mitraId: mieayamId,
     },
   ];
 }
 
-async function seedProducts(mitraId: string) {
+async function seedProducts(mitras: MitraUser[]) {
   await prisma.product.deleteMany();
   console.log("Cleared existing products");
 
-  const products = getDefaultProducts(mitraId);
+  const mitraMap = new Map(mitras.map((m) => [m.email, m.id]));
+  const products = getDefaultProducts(mitraMap);
 
   for (const product of products) {
     const created = await prisma.product.create({ data: product });
@@ -211,8 +231,8 @@ async function main() {
   console.log("Seeding database...");
 
   await seedAdminUser();
-  const mitra = await ensureMitraUser();
-  await seedProducts(mitra.id);
+  const mitras = await ensureMitraUsers();
+  await seedProducts(mitras);
 
   console.log("Seed complete!");
 }
