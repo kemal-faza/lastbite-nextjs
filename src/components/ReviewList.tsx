@@ -1,7 +1,9 @@
 'use client';
 
-import { Star, User } from 'lucide-react';
+import { StarIcon } from '@phosphor-icons/react';
 import type { Review } from '@/lib/api/reviews';
+import { Card, CardContent } from '@/components/ui/card';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 interface ReviewListProps {
   reviews: Review[];
@@ -19,7 +21,7 @@ function RatingBar({ stars, count, total }: { stars: number; count: number; tota
   return (
     <div className="flex items-center gap-2 text-sm">
       <span className="w-3 text-right text-gray-600 font-medium">{stars}</span>
-      <Star className="w-3.5 h-3.5 fill-[var(--secondary)] text-[var(--secondary)]" />
+      <StarIcon className="w-3.5 h-3.5 fill-[var(--secondary)] text-[var(--secondary)]" />
       <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
         <div
           className="h-full bg-[var(--secondary)] rounded-full transition-all"
@@ -39,45 +41,49 @@ function ReviewCard({ review }: { review: Review }) {
   });
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-      <div className="flex items-start justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-[var(--primary)]/10 flex items-center justify-center">
-            <User className="w-4 h-4 text-[var(--primary)]" />
+    <Card>
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <Avatar className="size-8">
+              <AvatarFallback className="text-xs">
+                {review.user?.name?.charAt(0) || '?'}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="text-sm font-semibold text-gray-900">
+                {review.user?.name || 'Food Saver'}
+              </p>
+              <p className="text-xs text-gray-400">{date}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-semibold text-gray-900">
-              {review.user?.name || 'Food Saver'}
-            </p>
-            <p className="text-xs text-gray-400">{date}</p>
+          <div className="flex items-center gap-0.5">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <StarIcon
+                key={star}
+                className={`w-3.5 h-3.5 ${
+                  star <= review.rating
+                    ? 'fill-[var(--secondary)] text-[var(--secondary)]'
+                    : 'text-gray-200'
+                }`}
+              />
+            ))}
           </div>
         </div>
-        <div className="flex items-center gap-0.5">
-          {[1, 2, 3, 4, 5].map((star) => (
-            <Star
-              key={star}
-              className={`w-3.5 h-3.5 ${
-                star <= review.rating
-                  ? 'fill-[var(--secondary)] text-[var(--secondary)]'
-                  : 'text-gray-200'
-              }`}
+        {review.comment && (
+          <p className="text-sm text-gray-700 leading-relaxed">{review.comment}</p>
+        )}
+        {review.imageUrl && (
+          <div className="mt-2">
+            <img
+              src={review.imageUrl}
+              alt="Review photo"
+              className="w-20 h-20 object-cover rounded-xl border border-gray-100"
             />
-          ))}
-        </div>
-      </div>
-      {review.comment && (
-        <p className="text-sm text-gray-700 leading-relaxed">{review.comment}</p>
-      )}
-      {review.imageUrl && (
-        <div className="mt-2">
-          <img
-            src={review.imageUrl}
-            alt="Review photo"
-            className="w-20 h-20 object-cover rounded-xl border border-gray-100"
-          />
-        </div>
-      )}
-    </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -121,7 +127,7 @@ export function ReviewList({
           <div>
             <div className="flex items-center gap-0.5">
               {[1, 2, 3, 4, 5].map((star) => (
-                <Star
+                <StarIcon
                   key={star}
                   className={`w-4 h-4 ${
                     avgRating !== null && star <= Math.round(avgRating)

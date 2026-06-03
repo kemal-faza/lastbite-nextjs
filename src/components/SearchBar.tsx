@@ -1,21 +1,50 @@
-import { Search } from 'lucide-react';
+"use client";
+
+import {
+  Command,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+} from "@/components/ui/command";
 
 interface SearchBarProps {
   value: string;
   onChange: (value: string) => void;
+  results?: Array<{ id: string | number; name: string; [key: string]: any }>;
+  onSelect?: (result: any) => void;
+  placeholder?: string;
 }
 
-export function SearchBar({ value, onChange }: SearchBarProps) {
+export function SearchBar({
+  value,
+  onChange,
+  results,
+  onSelect,
+  placeholder,
+}: SearchBarProps) {
   return (
-    <div className="relative">
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-      <input
-        type="text"
-        placeholder="Cari makanan surplus..."
+    <Command className="rounded-lg border" shouldFilter={false}>
+      <CommandInput
+        placeholder={placeholder ?? "Cari makanan surplus..."}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full pl-11 pr-4 py-3 bg-white rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
+        onValueChange={onChange}
       />
-    </div>
+      {results && (
+        <CommandList>
+          <CommandEmpty>Tidak ada hasil</CommandEmpty>
+          {results.length > 0 && (
+            <CommandGroup heading="Hasil Pencarian">
+              {results.map((result) => (
+                <CommandItem key={result.id} onSelect={() => onSelect?.(result)}>
+                  {result.name}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          )}
+        </CommandList>
+      )}
+    </Command>
   );
 }

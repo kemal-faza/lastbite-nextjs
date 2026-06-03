@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheckIcon } from '@phosphor-icons/react';
 import { useRouter } from 'next/navigation';
 import { SearchBar } from '@/components/SearchBar';
 import { CategoryFilter } from '@/components/CategoryFilter';
@@ -32,7 +32,7 @@ export default function HomePage() {
     sortBy === 'price-asc' ? 'price_asc' :
     sortBy === 'price-desc' ? 'price_desc' :
     sortBy === 'distance-asc' ? 'distance_asc' :
-    sortBy === 'remaining-asc' ? 'oldest' :
+    sortBy === 'remaining-asc' ? 'stock_asc' :
     undefined;
 
   const radiusParam = filters.maxDistance < 10 ? filters.maxDistance : undefined;
@@ -57,7 +57,7 @@ export default function HomePage() {
         <SearchBar value="" onChange={handleSearch} />
         <div className="bg-[var(--primary)]/5 rounded-xl p-3 flex items-center gap-3 border border-[var(--primary)]/10">
           <div className="bg-[var(--primary)]/10 p-1.5 rounded-full">
-            <ShieldCheck className="w-4 h-4 text-[var(--primary)]" />
+            <ShieldCheckIcon className="w-4 h-4 text-[var(--primary)]" />
           </div>
           <p className="text-xs text-[var(--primary)] leading-relaxed">
             <span className="font-semibold">Makanan Surplus Aman.</span> Setiap produk melewati cek kualitas. Diproduksi hari yang sama dengan standar higienis terjamin.
@@ -75,7 +75,7 @@ export default function HomePage() {
             </div>
           </div>
         )}
-        <CategoryFilter selected={selectedCategory} onSelect={setSelectedCategory} />
+        <CategoryFilter value={selectedCategory} onChange={setSelectedCategory} />
         <FilterBar
           activeSort={sortBy}
           onSortChange={setSortBy}

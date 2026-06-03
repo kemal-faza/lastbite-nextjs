@@ -1,20 +1,27 @@
 'use client';
 
-import { X, ShoppingBag, Bell, AlertTriangle } from 'lucide-react';
+import { ShoppingBagIcon, BellIcon, WarningIcon } from '@phosphor-icons/react';
 import { useNotifications } from '@/hooks/useNotifications';
 import type { NotificationData } from '@/lib/api/notifications';
 import { useRouter } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
 import { id } from 'date-fns/locale';
 
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
+
 function getIcon(type: NotificationData['type']) {
   switch (type) {
     case 'order_status':
-      return <ShoppingBag className="w-4 h-4 text-[var(--primary)]" />;
+      return <ShoppingBagIcon className="w-4 h-4 text-[var(--primary)]" />;
     case 'stock_alert':
-      return <AlertTriangle className="w-4 h-4 text-amber-500" />;
+      return <WarningIcon className="w-4 h-4 text-amber-500" />;
     default:
-      return <Bell className="w-4 h-4 text-gray-500" />;
+      return <BellIcon className="w-4 h-4 text-gray-500" />;
   }
 }
 
@@ -27,8 +34,6 @@ export function NotificationCenter({ open, onClose }: NotificationCenterProps) {
   const { notifications, markAsRead } = useNotifications();
   const router = useRouter();
 
-  if (!open) return null;
-
   const handleClick = (notif: NotificationData) => {
     markAsRead(notif.id);
     if (notif.data?.orderId) {
@@ -40,23 +45,15 @@ export function NotificationCenter({ open, onClose }: NotificationCenterProps) {
   };
 
   return (
-    <>
-      <div className="fixed inset-0 bg-black/30 z-40" onClick={onClose} aria-hidden="true" />
-      <div className="fixed inset-y-0 right-0 w-full max-w-sm bg-white z-50 shadow-2xl flex flex-col">
-        <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900">Notifikasi</h2>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
-            aria-label="Tutup"
-          >
-            <X className="w-5 h-5 text-gray-500" />
-          </button>
-        </div>
+    <Sheet open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <SheetContent side="right" className="w-full max-w-sm p-0 flex flex-col">
+        <SheetHeader className="px-4 py-4 border-b border-gray-100">
+          <SheetTitle className="text-lg font-bold text-gray-900">Notifikasi</SheetTitle>
+        </SheetHeader>
         <div className="flex-1 overflow-y-auto">
           {notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center px-4">
-              <Bell className="w-12 h-12 text-gray-300 mb-4" />
+              <BellIcon className="w-12 h-12 text-gray-300 mb-4" />
               <p className="text-gray-500 font-medium">Belum ada notifikasi</p>
             </div>
           ) : (
@@ -87,7 +84,7 @@ export function NotificationCenter({ open, onClose }: NotificationCenterProps) {
             </div>
           )}
         </div>
-      </div>
-    </>
+      </SheetContent>
+    </Sheet>
   );
 }

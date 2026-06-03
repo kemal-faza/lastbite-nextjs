@@ -1,4 +1,5 @@
 import type { MitraStats } from '@/lib/api/mitra';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface Props {
   stats: MitraStats;
@@ -12,12 +13,18 @@ export default function DashboardStatCards({ stats }: Props) {
   ];
 
   return (
-    <div className="flex gap-3">
+    <div className="grid grid-cols-2 gap-3">
       {cards.map((card) => (
-        <div key={card.label} className="flex-1 bg-white rounded-2xl shadow-sm px-4 py-5 text-center">
-          <p className={`text-2xl font-bold ${card.color}`}>{card.value}</p>
-          <p className="text-xs text-gray-500 mt-1">{card.label}</p>
-        </div>
+        <Card key={card.label}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-muted-foreground font-medium">
+              {card.label}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className={`text-2xl font-bold ${card.color}`}>{card.value}</p>
+          </CardContent>
+        </Card>
       ))}
     </div>
   );
